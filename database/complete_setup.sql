@@ -114,13 +114,32 @@ DROP POLICY IF EXISTS "Allow all downloads" ON storage.objects;
 DROP POLICY IF EXISTS "Allow all updates" ON storage.objects;
 DROP POLICY IF EXISTS "Allow all deletes" ON storage.objects;
 
--- Enable RLS on storage.objects (required for policies to work)
-ALTER TABLE storage.objects ENABLE ROW LEVEL SECURITY;
+-- Note: Storage policies are managed by Supabase and may require special permissions
+-- If you get permission errors, you can create these policies manually in the Supabase dashboard
+-- under Storage > Policies, or contact your Supabase project admin
 
--- Add storage policies for team-doc-files bucket
-CREATE POLICY "Allow all operations on team-doc-files" ON storage.objects
-FOR ALL USING (bucket_id = 'team-doc-files')
-WITH CHECK (bucket_id = 'team-doc-files');
+-- Try to enable RLS on storage.objects (may require owner permissions)
+DO $$
+BEGIN
+    BEGIN
+        ALTER TABLE storage.objects ENABLE ROW LEVEL SECURITY;
+    EXCEPTION WHEN insufficient_privilege THEN
+        RAISE NOTICE 'Could not enable RLS on storage.objects (permission denied). Please enable in Supabase dashboard.';
+    END;
+END $$;
+
+-- Try to add storage policies for team-doc-files bucket
+DO $$
+BEGIN
+    BEGIN
+        DROP POLICY IF EXISTS "Allow all operations on team-doc-files" ON storage.objects;
+        CREATE POLICY "Allow all operations on team-doc-files" ON storage.objects
+        FOR ALL USING (bucket_id = 'team-doc-files')
+        WITH CHECK (bucket_id = 'team-doc-files');
+    EXCEPTION WHEN insufficient_privilege THEN
+        RAISE NOTICE 'Could not create storage policies (permission denied). Please create manually in Supabase dashboard under Storage > Policies.';
+    END;
+END $$;
 
 -- Enable real-time for the files table (ignore if already exists)
 DO $$
@@ -144,7 +163,13 @@ END $$;
 
 -- Note: RLS (Row Level Security) is intentionally disabled for app tables for simplicity
 -- All access control is handled at the application level
--- Storage policies are enabled for file security
+-- Storage policies may need to be created manually in Supabase dashboard if permission errors occur
+
+-- MANUAL STORAGE SETUP (if automated setup fails):
+-- 1. Go to Supabase dashboard > Storage > Policies
+-- 2. Create a new policy for the 'team-doc-files' bucket
+-- 3. Set policy to allow all operations (INSERT, SELECT, UPDATE, DELETE)
+-- 4. Use this condition: bucket_id = 'team-doc-files'
 
 -- Verify setup
 SELECT
