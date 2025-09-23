@@ -2,7 +2,10 @@ import * as dotenv from 'dotenv';
 import * as path from 'path';
 
 // Load .env from current working directory (where user runs the command)
-dotenv.config({ path: path.join(process.cwd(), '.env') });
+// We call this in getConfig() to ensure it loads after process.cwd() is set correctly
+const loadEnvironment = () => {
+  dotenv.config({ path: path.join(process.cwd(), '.env') });
+};
 
 export interface Config {
   // Supabase configuration
@@ -26,6 +29,9 @@ export interface Config {
 }
 
 const getConfig = (): Config => {
+  // Load environment variables when config is actually requested
+  loadEnvironment();
+
   return {
     // Supabase configuration (required - no defaults)
     supabaseUrl: process.env.SUPABASE_URL || '',
