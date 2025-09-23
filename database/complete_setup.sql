@@ -1,6 +1,6 @@
--- Cursor Share Sync - Complete Database Setup
+-- Team Doc Share - Complete Database Setup
 -- Copy and paste this entire file into your Supabase SQL Editor and run it
--- This will set up everything needed for Cursor Share Sync
+-- This will set up everything needed for Team Doc Share
 
 -- Enable necessary extensions
 CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
@@ -94,7 +94,7 @@ CREATE TRIGGER update_files_updated_at
 
 -- Create storage bucket for files
 INSERT INTO storage.buckets (id, name, public)
-VALUES ('cursor-files', 'cursor-files', false)
+VALUES ('team-doc-files', 'team-doc-files', false)
 ON CONFLICT (id) DO NOTHING;
 
 -- Disable Row Level Security for all tables to avoid permission issues
@@ -109,22 +109,42 @@ DROP POLICY IF EXISTS "Workspace members can view files" ON storage.objects;
 DROP POLICY IF EXISTS "Workspace members can upload files" ON storage.objects;
 DROP POLICY IF EXISTS "File uploaders can update their files" ON storage.objects;
 DROP POLICY IF EXISTS "File uploaders and admins can delete files" ON storage.objects;
+DROP POLICY IF EXISTS "Allow all uploads" ON storage.objects;
+DROP POLICY IF EXISTS "Allow all downloads" ON storage.objects;
+DROP POLICY IF EXISTS "Allow all updates" ON storage.objects;
+DROP POLICY IF EXISTS "Allow all deletes" ON storage.objects;
 
--- Add simple storage policies that allow all operations
-CREATE POLICY "Allow all uploads" ON storage.objects FOR INSERT WITH CHECK (true);
-CREATE POLICY "Allow all downloads" ON storage.objects FOR SELECT USING (true);
-CREATE POLICY "Allow all updates" ON storage.objects FOR UPDATE USING (true);
-CREATE POLICY "Allow all deletes" ON storage.objects FOR DELETE USING (true);
+-- Enable RLS on storage.objects (required for policies to work)
+ALTER TABLE storage.objects ENABLE ROW LEVEL SECURITY;
 
--- Enable real-time for the files table
-ALTER PUBLICATION supabase_realtime ADD TABLE files;
+-- Add storage policies for team-doc-files bucket
+CREATE POLICY "Allow all operations on team-doc-files" ON storage.objects
+FOR ALL USING (bucket_id = 'team-doc-files')
+WITH CHECK (bucket_id = 'team-doc-files');
+
+-- Enable real-time for the files table (ignore if already exists)
+DO $$
+BEGIN
+    BEGIN
+        ALTER PUBLICATION supabase_realtime ADD TABLE files;
+    EXCEPTION WHEN duplicate_object THEN
+        -- Table already exists in publication, continue
+    END;
+END $$;
 
 -- Enable real-time for file_events table (for activity tracking)
-ALTER PUBLICATION supabase_realtime ADD TABLE file_events;
+DO $$
+BEGIN
+    BEGIN
+        ALTER PUBLICATION supabase_realtime ADD TABLE file_events;
+    EXCEPTION WHEN duplicate_object THEN
+        -- Table already exists in publication, continue
+    END;
+END $$;
 
--- Note: RLS (Row Level Security) is intentionally disabled for simplicity
+-- Note: RLS (Row Level Security) is intentionally disabled for app tables for simplicity
 -- All access control is handled at the application level
--- This makes setup easier and avoids authentication complexity
+-- Storage policies are enabled for file security
 
 -- Verify setup
 SELECT
@@ -143,4 +163,4 @@ WHERE pubname = 'supabase_realtime'
 AND tablename IN ('files', 'file_events');
 
 -- Setup complete!
-SELECT '🎉 Cursor Share Sync database setup complete!' as message;
+SELECT '🎉 Team Doc Share database setup complete!' as message;
