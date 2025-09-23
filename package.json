@@ -1,0 +1,74 @@
+{
+  "name": "cursor-share-sync",
+  "version": "1.0.0",
+  "main": "dist/index.js",
+  "bin": {
+    "cursor-share-sync": "dist/cli.js"
+  },
+  "files": [
+    "dist/**/*",
+    "README.md",
+    "TEAM_SETUP.md"
+  ],
+  "engines": {
+    "node": ">=16.0.0"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/nbrem108/cursor-share-sync.git"
+  },
+  "homepage": "https://github.com/nbrem108/cursor-share-sync#readme",
+  "bugs": {
+    "url": "https://github.com/nbrem108/cursor-share-sync/issues"
+  },
+  "scripts": {
+    "build": "tsc",
+    "dev": "nodemon --exec ts-node src/index.ts",
+    "start": "node dist/index.js",
+    "setup": "ts-node src/utils/setup-database.ts",
+    "setup-workspace": "ts-node src/utils/setup-workspace.ts",
+    "test-connection": "ts-node src/utils/test-connection.ts",
+    "prepublishOnly": "npm run build",
+    "package": "npm run build && pkg dist/index.js --targets node18-win-x64,node18-macos-x64,node18-linux-x64 --out-path dist/executables",
+    "package-win": "npm run build && pkg dist/index.js --targets node18-win-x64 --out-path dist/executables",
+    "lint": "eslint src/**/*.ts",
+    "lint:fix": "eslint src/**/*.ts --fix",
+    "format": "prettier --write src/**/*.ts",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [
+    "file-sync",
+    "collaboration",
+    "cursor",
+    "real-time"
+  ],
+  "author": "Your Name <your.email@example.com>",
+  "license": "MIT",
+  "description": "Real-time file sharing for Cursor AI outputs with team collaboration",
+  "devDependencies": {
+    "@types/commander": "^2.12.0",
+    "@types/node": "^24.5.2",
+    "@typescript-eslint/eslint-plugin": "^8.44.1",
+    "@typescript-eslint/parser": "^8.44.1",
+    "eslint": "^9.36.0",
+    "eslint-config-prettier": "^10.1.8",
+    "eslint-plugin-prettier": "^5.5.4",
+    "nodemon": "^3.1.10",
+    "pkg": "^5.8.1",
+    "prettier": "^3.6.2",
+    "ts-node": "^10.9.2",
+    "typescript": "^5.9.2"
+  },
+  "dependencies": {
+    "@supabase/supabase-js": "^2.57.4",
+    "chokidar": "^4.0.3",
+    "commander": "^14.0.1",
+    "dotenv": "^17.2.2"
+  },
+  "pkg": {
+    "assets": [
+      ".env.example"
+    ],
+    "outputPath": "dist/executables"
+  }
+}
