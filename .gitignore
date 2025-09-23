@@ -61,5 +61,5 @@ test-files/
 cursor-share/
 
 # IDE and development files
-.claude/
-.cursor/
+.claude/*
+.cursor/*
