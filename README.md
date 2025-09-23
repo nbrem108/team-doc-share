@@ -20,7 +20,8 @@ You'll need a free [Supabase](https://supabase.com) account for your team's back
    - Copy the displayed SQL and paste into Supabase SQL Editor
    - Click "Run" to create all tables and settings
 3. **Get credentials** from Supabase Settings → API (URL + anon key)
-   - ⚠️ **Important**: Use the **legacy/longer anon key** (starts with `eyJ...`), not the new short keys!
+   - ⚠️ **Important**: Use the **anon/public key** (starts with `eyJ...`), not service keys
+   - 📖 **Note**: This key is safe because our SQL setup configures proper Row Level Security (RLS) policies
 
 **No git clone required!** Everything works via NPX.
 
@@ -170,6 +171,8 @@ echo "# API Design\n\n..." > team-docs/sprint-1/api-design.md
 - **User attribution** - see who shared what and when
 - **Access control** - workspace-based team management
 - **Secure by design** - no credentials stored in source code
+- **Row Level Security (RLS)** - App tables use application-level security, storage files use RLS policies
+- **Safe anon keys** - Public keys are safe to use because RLS prevents unauthorized access
 
 ## 🤝 Contributing
 
