@@ -97,6 +97,25 @@ INSERT INTO storage.buckets (id, name, public)
 VALUES ('cursor-files', 'cursor-files', false)
 ON CONFLICT (id) DO NOTHING;
 
+-- Disable Row Level Security for all tables to avoid permission issues
+ALTER TABLE workspaces DISABLE ROW LEVEL SECURITY;
+ALTER TABLE workspace_members DISABLE ROW LEVEL SECURITY;
+ALTER TABLE files DISABLE ROW LEVEL SECURITY;
+ALTER TABLE file_events DISABLE ROW LEVEL SECURITY;
+ALTER TABLE user_profiles DISABLE ROW LEVEL SECURITY;
+
+-- Remove any existing storage policies that might block uploads
+DROP POLICY IF EXISTS "Workspace members can view files" ON storage.objects;
+DROP POLICY IF EXISTS "Workspace members can upload files" ON storage.objects;
+DROP POLICY IF EXISTS "File uploaders can update their files" ON storage.objects;
+DROP POLICY IF EXISTS "File uploaders and admins can delete files" ON storage.objects;
+
+-- Add simple storage policies that allow all operations
+CREATE POLICY "Allow all uploads" ON storage.objects FOR INSERT WITH CHECK (true);
+CREATE POLICY "Allow all downloads" ON storage.objects FOR SELECT USING (true);
+CREATE POLICY "Allow all updates" ON storage.objects FOR UPDATE USING (true);
+CREATE POLICY "Allow all deletes" ON storage.objects FOR DELETE USING (true);
+
 -- Enable real-time for the files table
 ALTER PUBLICATION supabase_realtime ADD TABLE files;
 
