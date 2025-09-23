@@ -283,6 +283,12 @@ export class SyncService {
       }
 
       fs.writeFileSync(localPath, content, 'utf8');
+
+      // Mark file as recently downloaded to prevent upload loop
+      const { FileWatcher } = await import('./file-watcher');
+      const fileWatcher = FileWatcher.getInstance();
+      fileWatcher.markAsDownloaded(fileRecord.filename);
+
       console.log(`📥 Downloaded: ${fileRecord.filename}`);
       return true;
 

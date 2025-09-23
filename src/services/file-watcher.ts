@@ -12,9 +12,26 @@ export class FileWatcher {
     errorCount: 0,
     filesWatched: 0,
   };
+  private recentlyDownloaded: Set<string> = new Set();
+  private static instance: FileWatcher;
 
   constructor() {
     this.ensureWatchFolderExists();
+  }
+
+  public static getInstance(): FileWatcher {
+    if (!FileWatcher.instance) {
+      FileWatcher.instance = new FileWatcher();
+    }
+    return FileWatcher.instance;
+  }
+
+  public markAsDownloaded(filename: string): void {
+    this.recentlyDownloaded.add(filename);
+    // Remove from set after 5 seconds to prevent permanent blocking
+    setTimeout(() => {
+      this.recentlyDownloaded.delete(filename);
+    }, 5000);
   }
 
   private ensureWatchFolderExists() {
@@ -97,6 +114,13 @@ export class FileWatcher {
     }
 
     const filename = path.basename(filePath);
+
+    // Skip files that were recently downloaded to prevent infinite loop
+    if (this.recentlyDownloaded.has(filename)) {
+      console.log(`⏭️  Skipping recently downloaded file: ${filename}`);
+      return;
+    }
+
     console.log(`📄 ${eventType === 'unlink' ? 'Deleting' : 'Syncing'} ${filename}...`);
 
     try {

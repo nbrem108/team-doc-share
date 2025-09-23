@@ -13,7 +13,7 @@ class CursorShareSync {
   private syncService: SyncService;
 
   constructor() {
-    this.fileWatcher = new FileWatcher();
+    this.fileWatcher = FileWatcher.getInstance();
     this.syncService = SyncService.getInstance();
   }
 
