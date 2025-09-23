@@ -5,29 +5,65 @@ import * as path from 'path';
 // We call this in getConfig() to ensure it loads after process.cwd() is set correctly
 const loadEnvironment = () => {
   const envPath = path.join(process.cwd(), '.env');
-  const result = dotenv.config({ path: envPath });
+  const fs = require('fs');
+
+  let result = dotenv.config({ path: envPath });
 
   // Check if .env file exists but no variables were loaded (encoding issue)
-  if (!result.error && Object.keys(result.parsed || {}).length === 0) {
-    const fs = require('fs');
-    if (fs.existsSync(envPath)) {
-      console.error('❌ .env file found but no variables loaded!');
-      console.log('💡 This usually means your .env file has encoding issues.');
+  if (!result.error && Object.keys(result.parsed || {}).length === 0 && fs.existsSync(envPath)) {
+    console.log('🔧 Detected encoding issue in .env file. Auto-fixing...');
+
+    try {
+      // Read the file with different encodings and try to fix it
+      let content = '';
+
+      // Try UTF-16 first (common Windows issue)
+      try {
+        content = fs.readFileSync(envPath, 'utf16le');
+        // Remove BOM if present
+        if (content.charCodeAt(0) === 0xFEFF) {
+          content = content.slice(1);
+        }
+      } catch {
+        // Fallback to binary read and manual conversion
+        try {
+          const buffer = fs.readFileSync(envPath);
+          // Check for UTF-16 BOM
+          if (buffer[0] === 0xFF && buffer[1] === 0xFE) {
+            content = buffer.toString('utf16le').slice(1);
+          } else if (buffer[0] === 0xEF && buffer[1] === 0xBB && buffer[2] === 0xBF) {
+            // UTF-8 BOM
+            content = buffer.toString('utf8').slice(1);
+          } else {
+            content = buffer.toString('utf8');
+          }
+        } catch {
+          console.error('❌ Could not read .env file with any encoding');
+          return;
+        }
+      }
+
+      if (content && content.includes('SUPABASE_URL')) {
+        // Write back as clean UTF-8
+        fs.writeFileSync(envPath, content, 'utf8');
+        console.log('✅ Fixed .env file encoding automatically');
+
+        // Reload with fixed encoding
+        result = dotenv.config({ path: envPath });
+
+        if (Object.keys(result.parsed || {}).length > 0) {
+          console.log('✅ Environment variables loaded successfully');
+        }
+      }
+    } catch (error) {
+      console.error('❌ Auto-fix failed. Please recreate your .env file:');
       console.log('');
-      console.log('🔧 Quick fix:');
-      console.log('');
-      console.log('Windows PowerShell (recommended):');
+      console.log('Windows PowerShell:');
       console.log('  Remove-Item .env -ErrorAction SilentlyContinue');
       console.log('  Set-Content -Path ".env" -Value "SUPABASE_URL=your-actual-url" -Encoding UTF8');
       console.log('  Add-Content -Path ".env" -Value "SUPABASE_ANON_KEY=your-actual-key" -Encoding UTF8');
       console.log('');
-      console.log('Command Prompt/Mac/Linux:');
-      console.log('  rm .env  # or: del .env');
-      console.log('  echo "SUPABASE_URL=your-actual-url" > .env');
-      console.log('  echo "SUPABASE_ANON_KEY=your-actual-key" >> .env');
-      console.log('');
-      console.log('⚠️  Make sure to use your REAL Supabase credentials, not placeholders!');
-      console.log('');
+      console.log('⚠️  Make sure to use your REAL Supabase credentials!');
     }
   }
 };

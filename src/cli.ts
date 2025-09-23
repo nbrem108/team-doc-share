@@ -28,18 +28,20 @@ program
     if (!fs.existsSync(envPath)) {
       console.error('❌ No .env file found in current directory!');
       console.log(`\n📁 Looking for: ${envPath}`);
-      console.log('\n📋 Required setup:');
-      console.log('1. Create a .env file in your current directory with Supabase credentials:');
+      console.log('\n📋 Simple setup:');
+      console.log('1. Create a .env file in your current directory');
+      console.log('2. Copy your Supabase credentials from Settings → API');
+      console.log('3. Add these two lines to .env:');
       console.log('   SUPABASE_URL=https://your-project.supabase.co');
       console.log('   SUPABASE_ANON_KEY=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...');
-      console.log('   💡 Use the legacy/longer anon key from Settings → API, not the short key!');
       console.log('');
-      console.log('2. Set up your Supabase database:');
-      console.log('   - In your Supabase dashboard, go to SQL Editor');
+      console.log('💡 Don\'t worry about encoding - we\'ll auto-fix any issues!');
+      console.log('💡 Use the anon/public key from Settings → API (starts with eyJ...)');
+      console.log('');
+      console.log('4. Set up your Supabase database:');
       console.log('   - Run: npx team-doc-share sql (to display the SQL)');
-      console.log('   - Copy and paste the displayed SQL into Supabase');
-      console.log('   - Or download from: https://github.com/nbrem108/team-doc-share/blob/main/database/complete_setup.sql');
-      console.log('3. Run this setup command again');
+      console.log('   - Copy and paste the displayed SQL into Supabase SQL Editor');
+      console.log('5. Run this setup command again');
       process.exit(1);
     }
 
