@@ -58,23 +58,28 @@ class CursorShareSync {
     }
   }
 
-  private handleRealTimeEvent(event: any) {
+  private async handleRealTimeEvent(event: any) {
     const { eventType, new: newRecord, old: oldRecord } = event;
 
     switch (eventType) {
       case 'INSERT':
         if (newRecord && newRecord.filename) {
           console.log(`📄 Team file added: ${newRecord.filename}`);
+          // Download the file to local folder
+          await this.syncService.downloadFile(newRecord.id);
         }
         break;
       case 'UPDATE':
         if (newRecord && newRecord.filename) {
           console.log(`📝 Team file updated: ${newRecord.filename}`);
+          // Download the updated file
+          await this.syncService.downloadFile(newRecord.id);
         }
         break;
       case 'DELETE':
         if (oldRecord && oldRecord.filename) {
           console.log(`🗑️ Team file deleted: ${oldRecord.filename}`);
+          // TODO: Remove file from local folder
         }
         break;
     }

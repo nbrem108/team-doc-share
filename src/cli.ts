@@ -14,7 +14,7 @@ const program = new Command();
 program
   .name('cursor-share-sync')
   .description('Real-time file sharing for Cursor AI outputs')
-  .version('2.0.4');
+  .version('2.0.5');
 
 program
   .command('setup')

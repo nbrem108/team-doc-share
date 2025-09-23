@@ -243,6 +243,55 @@ export class SyncService {
     }
   }
 
+  async downloadFile(fileId: string): Promise<boolean> {
+    try {
+      // Get file record from database
+      const { data: fileRecord, error: dbError } = await supabase
+        .from('files')
+        .select('*')
+        .eq('id', fileId)
+        .single();
+
+      if (dbError || !fileRecord) {
+        console.error(`❌ Failed to fetch file record:`, dbError);
+        return false;
+      }
+
+      // Download file content from storage
+      const { data: fileData, error: storageError } = await supabase.storage
+        .from('cursor-files')
+        .download(fileRecord.storage_path);
+
+      if (storageError || !fileData) {
+        console.error(`❌ Failed to download file:`, storageError);
+        return false;
+      }
+
+      // Convert blob to text
+      const content = await fileData.text();
+
+      // Write to local file system
+      const fs = await import('fs');
+      const path = await import('path');
+
+      const localPath = path.join(config.watchFolder, fileRecord.filename);
+
+      // Create directory if it doesn't exist
+      const dir = path.dirname(localPath);
+      if (!fs.existsSync(dir)) {
+        fs.mkdirSync(dir, { recursive: true });
+      }
+
+      fs.writeFileSync(localPath, content, 'utf8');
+      console.log(`📥 Downloaded: ${fileRecord.filename}`);
+      return true;
+
+    } catch (error) {
+      console.error(`❌ Failed to download file:`, error);
+      return false;
+    }
+  }
+
   async setupRealTimeSubscription(workspaceId: string, callback: (event: any) => void): Promise<void> {
     try {
       const channel = supabase
