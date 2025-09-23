@@ -13,7 +13,7 @@ const program = new Command();
 program
   .name('cursor-share-sync')
   .description('Real-time file sharing for Cursor AI outputs')
-  .version('2.0.0');
+  .version('2.0.1');
 
 program
   .command('setup')
@@ -30,7 +30,10 @@ program
       console.log('   SUPABASE_URL=https://your-project.supabase.co');
       console.log('   SUPABASE_ANON_KEY=your-anon-key');
       console.log('');
-      console.log('2. Set up your Supabase database using the SQL files in database/');
+      console.log('2. Set up your Supabase database:');
+      console.log('   - In your Supabase dashboard, go to SQL Editor');
+      console.log('   - Copy and run: node_modules/cursor-share-sync/database/complete_setup.sql');
+      console.log('   - Or download from: https://github.com/nbrem108/cursor-share-sync/blob/main/database/complete_setup.sql');
       console.log('3. Run this setup command again');
       process.exit(1);
     }

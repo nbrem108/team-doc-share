@@ -1,14 +1,15 @@
 {
   "name": "cursor-share-sync",
-  "version": "2.0.0",
+  "version": "2.0.1",
   "main": "dist/index.js",
   "bin": {
     "cursor-share-sync": "dist/cli.js"
   },
   "files": [
     "dist/**/*",
+    "database/**/*",
     "README.md",
-    "TEAM_SETUP.md"
+    ".env.example"
   ],
   "engines": {
     "node": ">=16.0.0"
