@@ -1,10 +1,10 @@
-# 🚀 Cursor Share Sync
+# 🚀 Team Doc Share
 
-**Instantly share Cursor AI outputs with your team**
+**Instantly share documents with your team**
 
 Drop markdown files → Instant team sync → Zero manual work
 
-[![npm version](https://badge.fury.io/js/cursor-share-sync.svg)](https://www.npmjs.com/package/cursor-share-sync)
+[![npm version](https://badge.fury.io/js/team-doc-share.svg)](https://www.npmjs.com/package/team-doc-share)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
 ## ⚡ Quick Start
@@ -15,7 +15,7 @@ You'll need a free [Supabase](https://supabase.com) account for your team's back
 1. **Create a Supabase project** at [supabase.com](https://supabase.com)
 2. **Set up the database** with one command:
    ```bash
-   npx cursor-share-sync sql
+   npx team-doc-share sql
    ```
    - Copy the displayed SQL and paste into Supabase SQL Editor
    - Click "Run" to create all tables and settings
@@ -31,25 +31,25 @@ echo "SUPABASE_URL=https://your-project.supabase.co" > .env
 echo "SUPABASE_ANON_KEY=your-anon-key" >> .env
 
 # 2. Setup workspace
-npx cursor-share-sync setup
+npx team-doc-share setup
 ```
 
 ### Team Members (Join workspace)
 ```bash
 # Use the full command provided by your team admin
-npx cursor-share-sync join <workspace-id> <access-key> <supabase-url> <supabase-anon-key> --name "Your Name"
+npx team-doc-share join <workspace-id> <access-key> <supabase-url> <supabase-anon-key> --name "Your Name"
 ```
 
 ### Daily Usage
 ```bash
-npx cursor-share-sync start
+npx team-doc-share start
 ```
 
-Drop markdown files in `cursor-share/` folder → Files sync instantly to team!
+Drop markdown files in `team-docs/` folder → Files sync instantly to team!
 
 ## 🎯 Why Use This?
 
-**Before:** Manual copy/paste, email attachments, scattered Cursor outputs
+**Before:** Manual copy/paste, email attachments, scattered AI outputs
 **After:** Drop file → Team sees it instantly → Organized by project/sprint
 
 ## ✨ Features
@@ -60,18 +60,19 @@ Drop markdown files in `cursor-share/` folder → Files sync instantly to team!
 - **🔔 Real-time** - See when teammates add files live
 - **🔒 Secure** - Private team workspaces with access keys
 - **📱 Cross-platform** - Windows, Mac, Linux support
+- **🎯 Universal** - Works with any editor (Cursor, VS Code, etc.)
 
 ## 📖 How It Works
 
-1. **Setup once**: Team admin creates workspace with `npx cursor-share-sync setup`
+1. **Setup once**: Team admin creates workspace with `npx team-doc-share setup`
 2. **Join workspace**: Team members join with shared workspace ID + access key
-3. **Drop & sync**: Save Cursor outputs as `.md` files in `cursor-share/` folder
+3. **Drop & sync**: Save documents as `.md` files in `team-docs/` folder
 4. **Instant sharing**: Files automatically sync to team workspace in real-time
 
 ## 🗂️ File Organization
 
 ```
-cursor-share/
+team-docs/
 ├── sprint-2025.1/
 │   ├── feature-auth.md      # #authentication #backend
 │   └── bug-fix-login.md     # #bugfix #frontend
@@ -91,22 +92,22 @@ cursor-share/
 
 ```bash
 # Get database setup SQL (copy/paste into Supabase)
-npx cursor-share-sync sql
+npx team-doc-share sql
 
 # Setup new workspace (admin only, requires .env file)
-npx cursor-share-sync setup
+npx team-doc-share setup
 
 # Join existing workspace (all parameters required)
-npx cursor-share-sync join <workspace-id> <access-key> <supabase-url> <supabase-anon-key> --name "John Doe"
+npx team-doc-share join <workspace-id> <access-key> <supabase-url> <supabase-anon-key> --name "John Doe"
 
 # Start file watching
-npx cursor-share-sync start
+npx team-doc-share start
 
 # Test connection (requires .env file or joined workspace)
-npx cursor-share-sync test
+npx team-doc-share test
 
 # Help
-npx cursor-share-sync --help
+npx team-doc-share --help
 ```
 
 ## 🚨 Troubleshooting
@@ -117,30 +118,31 @@ npx cursor-share-sync --help
 - Check your internet connection to Supabase
 
 **"Setup failed" or "Database query failed"**
-- Run `npx cursor-share-sync sql` and paste the SQL into Supabase SQL Editor
+- Run `npx team-doc-share sql` and paste the SQL into Supabase SQL Editor
 - Verify your Supabase project is active and you're using the **legacy anon key**
 - Check the Supabase dashboard for errors
 
 **"No files syncing"**
 - Ensure files are `.md` or `.txt` format
 - Check the console for error messages
-- Run `npx cursor-share-sync test`
+- Run `npx team-doc-share test`
 - Verify all team members joined the same workspace
 
 **"Real-time sync not working"**
 - Check that real-time is enabled in your Supabase project
 - Verify network connectivity
-- Try restarting with `npx cursor-share-sync start`
+- Try restarting with `npx team-doc-share start`
 
-**Need help?** Open an [issue](https://github.com/nbrem108/cursor-share-sync/issues)
+**Need help?** Open an [issue](https://github.com/nbrem108/team-doc-share/issues)
 
 ## 🎯 Perfect For
 
-- **Dev Teams** sharing Cursor AI outputs
+- **Dev Teams** sharing AI outputs (Cursor, ChatGPT, etc.)
+- **Documentation Teams** collaborating on guides
 - **Sprint Planning** with organized file sharing
 - **Knowledge Management** across projects
 - **Remote Teams** needing instant collaboration
-- **Anyone** tired of manual file sharing
+- **Any Team** tired of manual file sharing
 
 ## 📊 Example Workflow
 
@@ -148,15 +150,15 @@ npx cursor-share-sync --help
 # Team lead sets up Supabase and workspace
 echo "SUPABASE_URL=https://abc123.supabase.co" > .env
 echo "SUPABASE_ANON_KEY=eyJ..." >> .env
-npx cursor-share-sync setup
-# Shares: npx cursor-share-sync join workspace123 key456 https://abc123.supabase.co eyJ...
+npx team-doc-share setup
+# Shares: npx team-doc-share join workspace123 key456 https://abc123.supabase.co eyJ...
 
 # Developer joins and starts sharing
-npx cursor-share-sync join workspace123 key456 https://abc123.supabase.co eyJ... --name "Alice"
-npx cursor-share-sync start
+npx team-doc-share join workspace123 key456 https://abc123.supabase.co eyJ... --name "Alice"
+npx team-doc-share start
 
-# Alice saves Cursor output
-echo "# API Design\n\n..." > cursor-share/sprint-1/api-design.md
+# Alice saves AI output or documentation
+echo "# API Design\n\n..." > team-docs/sprint-1/api-design.md
 
 # Team sees file instantly! 🎉
 ```
@@ -176,15 +178,15 @@ We welcome contributions! Here's how to get started:
 ### Development Setup
 ```bash
 # Clone the repository
-git clone https://github.com/nbrem108/cursor-share-sync.git
-cd cursor-share-sync
+git clone https://github.com/nbrem108/team-doc-share.git
+cd team-doc-share
 
 # Install dependencies
 npm install
 
 # Create your own Supabase project for testing
 # 1. Go to supabase.com and create a project
-# 2. Run: npx cursor-share-sync sql (copy/paste the SQL into Supabase)
+# 2. Run: npx team-doc-share sql (copy/paste the SQL into Supabase)
 # 3. Create .env file with your credentials:
 echo "SUPABASE_URL=https://your-test-project.supabase.co" > .env
 echo "SUPABASE_ANON_KEY=your-test-anon-key" >> .env
@@ -219,9 +221,9 @@ npm run format        # Format code with Prettier
 - **commander** - CLI framework
 
 ### Need Help?
-- 📖 Check existing [issues](https://github.com/nbrem108/cursor-share-sync/issues)
-- 💬 Open a [discussion](https://github.com/nbrem108/cursor-share-sync/discussions)
-- 🐛 Report bugs via [issues](https://github.com/nbrem108/cursor-share-sync/issues/new)
+- 📖 Check existing [issues](https://github.com/nbrem108/team-doc-share/issues)
+- 💬 Open a [discussion](https://github.com/nbrem108/team-doc-share/discussions)
+- 🐛 Report bugs via [issues](https://github.com/nbrem108/team-doc-share/issues/new)
 
 ## 📜 License
 
@@ -229,4 +231,4 @@ MIT - see [LICENSE](LICENSE) file
 
 ---
 
-**Made with ❤️ for Cursor users who want seamless team collaboration**
+**Made with ❤️ for teams who want seamless document collaboration**

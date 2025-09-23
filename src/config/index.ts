@@ -35,7 +35,7 @@ const getConfig = (): Config => {
     // File watcher configuration
     watchFolder:
       process.env.WATCH_FOLDER ||
-      path.join(process.cwd(), 'cursor-share'),
+      path.join(process.cwd(), 'team-docs'),
     maxFileSize: parseInt(process.env.MAX_FILE_SIZE || '10485760'), // 10MB default
     allowedExtensions: (process.env.ALLOWED_EXTENSIONS || '.md,.txt')
       .split(',')

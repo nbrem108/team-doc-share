@@ -1,8 +1,8 @@
 #!/usr/bin/env node
 
 /**
- * CLI for Cursor Share Sync
- * Enables simple team distribution via NPX
+ * CLI for Team Doc Share
+ * Instant team document sharing via NPX
  */
 
 import { Command } from 'commander';
@@ -12,15 +12,15 @@ import * as path from 'path';
 const program = new Command();
 
 program
-  .name('cursor-share-sync')
-  .description('Real-time file sharing for Cursor AI outputs')
-  .version('2.0.7');
+  .name('team-doc-share')
+  .description('Instant team document sharing - Drop files, sync with your team')
+  .version('1.0.0');
 
 program
   .command('setup')
   .description('Set up a new workspace (requires Supabase credentials)')
   .action(async () => {
-    console.log('🏗️  Setting up new Cursor Share Sync workspace...');
+    console.log('🏗️  Setting up new team document sharing workspace...');
     console.log('');
 
     // Check if .env exists in current working directory
@@ -36,9 +36,9 @@ program
       console.log('');
       console.log('2. Set up your Supabase database:');
       console.log('   - In your Supabase dashboard, go to SQL Editor');
-      console.log('   - Run: npx cursor-share-sync sql (to display the SQL)');
+      console.log('   - Run: npx team-doc-share sql (to display the SQL)');
       console.log('   - Copy and paste the displayed SQL into Supabase');
-      console.log('   - Or download from: https://github.com/nbrem108/cursor-share-sync/blob/main/database/complete_setup.sql');
+      console.log('   - Or download from: https://github.com/nbrem108/team-doc-share/blob/main/database/complete_setup.sql');
       console.log('3. Run this setup command again');
       process.exit(1);
     }
@@ -49,7 +49,7 @@ program
 
       console.log('\n🎉 Workspace setup complete!');
       console.log('\n📋 Share this command with your team:');
-      console.log(`\nnpx cursor-share-sync join ${result.workspaceId} ${result.accessKey} ${process.env.SUPABASE_URL} ${process.env.SUPABASE_ANON_KEY}\n`);
+      console.log(`\nnpx team-doc-share join ${result.workspaceId} ${result.accessKey} ${process.env.SUPABASE_URL} ${process.env.SUPABASE_ANON_KEY}\n`);
       console.log('🔐 Keep all credentials secure - anyone with them can join your workspace!');
 
     } catch (error) {
@@ -72,8 +72,8 @@ program
     console.log('🤝 Joining workspace...');
 
     // Create .env file with all required settings
-    const envContent = `# Cursor Share Sync - Team Configuration
-# Simple team file sharing for Cursor AI outputs
+    const envContent = `# Team Doc Share - Team Configuration
+# Instant team document sharing
 
 # Supabase Configuration (provided by admin)
 SUPABASE_URL=${supabaseUrl}
@@ -88,7 +88,7 @@ USER_DISPLAY_NAME=${options.name || 'Team Member'}
 USER_EMAIL=${options.email || ''}
 
 # File Watcher Settings (customize if needed)
-WATCH_FOLDER=./cursor-share
+WATCH_FOLDER=./team-docs
 MAX_FILE_SIZE=10485760
 ALLOWED_EXTENSIONS=.md,.txt
 `;
@@ -102,8 +102,8 @@ ALLOWED_EXTENSIONS=.md,.txt
 
     console.log('\n🎉 Successfully joined workspace!');
     console.log('\nNext steps:');
-    console.log('1. Run: npx cursor-share-sync start');
-    console.log('2. Drop markdown files in the cursor-share folder');
+    console.log('1. Run: npx team-doc-share start');
+    console.log('2. Drop markdown files in the team-docs folder');
     console.log('3. Watch them sync with your team!');
   });
 
@@ -111,7 +111,7 @@ program
   .command('start')
   .description('Start the file watcher')
   .action(async () => {
-    console.log('🚀 Starting Cursor Share Sync...');
+    console.log('🚀 Starting Team Doc Share...');
 
     // Check if .env exists in current working directory
     const envPath = path.join(process.cwd(), '.env');
@@ -119,8 +119,8 @@ program
       console.error('❌ No configuration found!');
       console.log(`\n📁 Looking for: ${envPath}`);
       console.log('\nFirst time setup:');
-      console.log('• Team admin: npx cursor-share-sync setup');
-      console.log('• Team members: npx cursor-share-sync join <workspace-id> <access-key> <supabase-url> <supabase-anon-key>');
+      console.log('• Team admin: npx team-doc-share setup');
+      console.log('• Team members: npx team-doc-share join <workspace-id> <access-key> <supabase-url> <supabase-anon-key>');
       process.exit(1);
     }
 
@@ -161,12 +161,12 @@ program
       console.log('=' .repeat(70));
       console.log(sqlContent);
       console.log('=' .repeat(70));
-      console.log('\n✅ After running this SQL, come back and run: npx cursor-share-sync setup');
+      console.log('\n✅ After running this SQL, come back and run: npx team-doc-share setup');
 
     } catch (error) {
       console.error('❌ Error reading SQL file:', error);
       console.log('\n📥 Download directly from:');
-      console.log('https://github.com/nbrem108/cursor-share-sync/blob/main/database/complete_setup.sql');
+      console.log('https://github.com/nbrem108/team-doc-share/blob/main/database/complete_setup.sql');
     }
   });
 

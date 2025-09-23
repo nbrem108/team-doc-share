@@ -1,9 +1,9 @@
 {
-  "name": "cursor-share-sync",
-  "version": "2.0.7",
+  "name": "team-doc-share",
+  "version": "1.0.0",
   "main": "dist/index.js",
   "bin": {
-    "cursor-share-sync": "dist/cli.js"
+    "team-doc-share": "dist/cli.js"
   },
   "files": [
     "dist/**/*",
@@ -16,11 +16,11 @@
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/nbrem108/cursor-share-sync.git"
+    "url": "https://github.com/nbrem108/team-doc-share.git"
   },
-  "homepage": "https://github.com/nbrem108/cursor-share-sync#readme",
+  "homepage": "https://github.com/nbrem108/team-doc-share#readme",
   "bugs": {
-    "url": "https://github.com/nbrem108/cursor-share-sync/issues"
+    "url": "https://github.com/nbrem108/team-doc-share/issues"
   },
   "scripts": {
     "build": "tsc",
@@ -38,14 +38,17 @@
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "keywords": [
-    "file-sync",
+    "team",
+    "document",
+    "sharing",
     "collaboration",
-    "cursor",
+    "sync",
+    "markdown",
     "real-time"
   ],
   "author": "Your Name <your.email@example.com>",
   "license": "MIT",
-  "description": "Real-time file sharing for Cursor AI outputs with team collaboration",
+  "description": "Instant team document sharing - Drop markdown files, sync with your team in real-time",
   "devDependencies": {
     "@types/commander": "^2.12.0",
     "@types/node": "^24.5.2",
