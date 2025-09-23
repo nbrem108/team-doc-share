@@ -26,9 +26,9 @@ You'll need a free [Supabase](https://supabase.com) account for your team's back
 
 ### Team Admin (First-time setup)
 ```bash
-# 1. Create .env file with your Supabase credentials
-echo "SUPABASE_URL=https://your-project.supabase.co" > .env
-echo "SUPABASE_ANON_KEY=your-anon-key" >> .env
+# 1. Create .env file with your ACTUAL Supabase credentials
+echo "SUPABASE_URL=https://your-actual-project-id.supabase.co" > .env
+echo "SUPABASE_ANON_KEY=eyJyour-actual-anon-key-here" >> .env
 
 # 2. Setup workspace
 npx team-doc-share setup
@@ -147,9 +147,9 @@ npx team-doc-share --help
 ## 📊 Example Workflow
 
 ```bash
-# Team lead sets up Supabase and workspace
-echo "SUPABASE_URL=https://abc123.supabase.co" > .env
-echo "SUPABASE_ANON_KEY=eyJ..." >> .env
+# Team lead sets up Supabase and workspace (REPLACE WITH YOUR REAL VALUES)
+echo "SUPABASE_URL=https://your-project-id.supabase.co" > .env
+echo "SUPABASE_ANON_KEY=eyJyour-full-anon-key-here" >> .env
 npx team-doc-share setup
 # Shares: npx team-doc-share join workspace123 key456 https://abc123.supabase.co eyJ...
 
@@ -187,9 +187,9 @@ npm install
 # Create your own Supabase project for testing
 # 1. Go to supabase.com and create a project
 # 2. Run: npx team-doc-share sql (copy/paste the SQL into Supabase)
-# 3. Create .env file with your credentials:
-echo "SUPABASE_URL=https://your-test-project.supabase.co" > .env
-echo "SUPABASE_ANON_KEY=your-test-anon-key" >> .env
+# 3. Create .env file with your REAL credentials:
+echo "SUPABASE_URL=https://your-actual-test-project-id.supabase.co" > .env
+echo "SUPABASE_ANON_KEY=eyJyour-actual-test-anon-key" >> .env
 
 # Build and test
 npm run build
