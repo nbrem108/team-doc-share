@@ -1,6 +1,6 @@
 {
   "name": "team-doc-share",
-  "version": "1.0.5",
+  "version": "1.0.6",
   "main": "dist/index.js",
   "bin": {
     "team-doc-share": "dist/cli.js"
