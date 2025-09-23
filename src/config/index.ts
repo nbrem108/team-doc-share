@@ -4,7 +4,25 @@ import * as path from 'path';
 // Load .env from current working directory (where user runs the command)
 // We call this in getConfig() to ensure it loads after process.cwd() is set correctly
 const loadEnvironment = () => {
-  dotenv.config({ path: path.join(process.cwd(), '.env') });
+  const envPath = path.join(process.cwd(), '.env');
+  const result = dotenv.config({ path: envPath });
+
+  // Check if .env file exists but no variables were loaded (encoding issue)
+  if (!result.error && Object.keys(result.parsed || {}).length === 0) {
+    const fs = require('fs');
+    if (fs.existsSync(envPath)) {
+      console.error('❌ .env file found but no variables loaded!');
+      console.log('💡 This usually means your .env file has encoding issues.');
+      console.log('');
+      console.log('🔧 Quick fix (run these commands):');
+      console.log('  rm .env');
+      console.log('  echo "SUPABASE_URL=your-actual-url" > .env');
+      console.log('  echo "SUPABASE_ANON_KEY=your-actual-key" >> .env');
+      console.log('');
+      console.log('⚠️  Make sure to use your REAL Supabase credentials, not placeholders!');
+      console.log('');
+    }
+  }
 };
 
 export interface Config {

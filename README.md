@@ -118,6 +118,15 @@ npx team-doc-share --help
 - Verify `SUPABASE_URL` and `SUPABASE_ANON_KEY` are correct
 - Check your internet connection to Supabase
 
+**".env file found but no variables loaded" (Windows)**
+- File encoding issue - .env must be UTF-8, not UTF-16
+- Delete and recreate .env file:
+  ```bash
+  rm .env
+  echo "SUPABASE_URL=your-actual-url" > .env
+  echo "SUPABASE_ANON_KEY=your-actual-key" >> .env
+  ```
+
 **"Setup failed" or "Database query failed"**
 - Run `npx team-doc-share sql` and paste the SQL into Supabase SQL Editor
 - Verify your Supabase project is active and you're using the **legacy anon key**
