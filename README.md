@@ -26,6 +26,18 @@ You'll need a free [Supabase](https://supabase.com) account for your team's back
 **No git clone required!** Everything works via NPX.
 
 ### Team Admin (First-time setup)
+
+**Windows (PowerShell):**
+```powershell
+# 1. Create .env file (PowerShell - forces UTF-8 encoding)
+Set-Content -Path ".env" -Value "SUPABASE_URL=your-actual-project-id.supabase.co" -Encoding UTF8
+Add-Content -Path ".env" -Value "SUPABASE_ANON_KEY=eyJyour-actual-anon-key-here" -Encoding UTF8
+
+# 2. Setup workspace
+npx team-doc-share setup
+```
+
+**Mac/Linux (Bash):**
 ```bash
 # 1. Create .env file with your ACTUAL Supabase credentials
 echo "SUPABASE_URL=https://your-actual-project-id.supabase.co" > .env
@@ -34,6 +46,17 @@ echo "SUPABASE_ANON_KEY=eyJyour-actual-anon-key-here" >> .env
 # 2. Setup workspace
 npx team-doc-share setup
 ```
+
+**Alternative (All platforms) - Create .env file manually:**
+1. Create a new file called `.env` in your project directory
+2. Copy your credentials from Supabase Settings → API
+3. Add these two lines (replace with your real values):
+```
+SUPABASE_URL=https://your-project-id.supabase.co
+SUPABASE_ANON_KEY=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
+```
+4. Save as UTF-8 encoding
+5. Run: `npx team-doc-share setup`
 
 ### Team Members (Join workspace)
 ```bash
@@ -120,11 +143,17 @@ npx team-doc-share --help
 
 **".env file found but no variables loaded" (Windows)**
 - File encoding issue - .env must be UTF-8, not UTF-16
-- Delete and recreate .env file:
-  ```bash
-  rm .env
-  echo "SUPABASE_URL=your-actual-url" > .env
-  echo "SUPABASE_ANON_KEY=your-actual-key" >> .env
+- **Fix with PowerShell (recommended):**
+  ```powershell
+  Remove-Item .env -ErrorAction SilentlyContinue
+  Set-Content -Path ".env" -Value "SUPABASE_URL=your-actual-url" -Encoding UTF8
+  Add-Content -Path ".env" -Value "SUPABASE_ANON_KEY=your-actual-key" -Encoding UTF8
+  ```
+- **Or fix with Command Prompt:**
+  ```cmd
+  del .env
+  echo SUPABASE_URL=your-actual-url > .env
+  echo SUPABASE_ANON_KEY=your-actual-key >> .env
   ```
 
 **"Setup failed" or "Database query failed"**
@@ -158,8 +187,12 @@ npx team-doc-share --help
 
 ```bash
 # Team lead sets up Supabase and workspace (REPLACE WITH YOUR REAL VALUES)
-echo "SUPABASE_URL=https://your-project-id.supabase.co" > .env
-echo "SUPABASE_ANON_KEY=eyJyour-full-anon-key-here" >> .env
+# Windows PowerShell (UTF-8 safe):
+Set-Content -Path ".env" -Value "SUPABASE_URL=https://your-project-id.supabase.co" -Encoding UTF8
+Add-Content -Path ".env" -Value "SUPABASE_ANON_KEY=eyJyour-full-anon-key-here" -Encoding UTF8
+# Mac/Linux:
+# echo "SUPABASE_URL=https://your-project-id.supabase.co" > .env
+# echo "SUPABASE_ANON_KEY=eyJyour-full-anon-key-here" >> .env
 npx team-doc-share setup
 # Shares: npx team-doc-share join workspace123 key456 https://abc123.supabase.co eyJ...
 

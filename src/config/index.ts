@@ -14,8 +14,15 @@ const loadEnvironment = () => {
       console.error('❌ .env file found but no variables loaded!');
       console.log('💡 This usually means your .env file has encoding issues.');
       console.log('');
-      console.log('🔧 Quick fix (run these commands):');
-      console.log('  rm .env');
+      console.log('🔧 Quick fix:');
+      console.log('');
+      console.log('Windows PowerShell (recommended):');
+      console.log('  Remove-Item .env -ErrorAction SilentlyContinue');
+      console.log('  Set-Content -Path ".env" -Value "SUPABASE_URL=your-actual-url" -Encoding UTF8');
+      console.log('  Add-Content -Path ".env" -Value "SUPABASE_ANON_KEY=your-actual-key" -Encoding UTF8');
+      console.log('');
+      console.log('Command Prompt/Mac/Linux:');
+      console.log('  rm .env  # or: del .env');
       console.log('  echo "SUPABASE_URL=your-actual-url" > .env');
       console.log('  echo "SUPABASE_ANON_KEY=your-actual-key" >> .env');
       console.log('');
