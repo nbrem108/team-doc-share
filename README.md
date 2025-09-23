@@ -20,6 +20,7 @@ You'll need a free [Supabase](https://supabase.com) account for your team's back
    - Copy the displayed SQL and paste into Supabase SQL Editor
    - Click "Run" to create all tables and settings
 3. **Get credentials** from Supabase Settings → API (URL + anon key)
+   - ⚠️ **Important**: Use the **legacy/longer anon key** (starts with `eyJ...`), not the new short keys!
 
 **No git clone required!** Everything works via NPX.
 
@@ -116,8 +117,8 @@ npx cursor-share-sync --help
 - Check your internet connection to Supabase
 
 **"Setup failed" or "Database query failed"**
-- Ensure you've run the SQL scripts from `database/` folder in Supabase
-- Verify your Supabase project is active
+- Run `npx cursor-share-sync sql` and paste the SQL into Supabase SQL Editor
+- Verify your Supabase project is active and you're using the **legacy anon key**
 - Check the Supabase dashboard for errors
 
 **"No files syncing"**
@@ -183,7 +184,7 @@ npm install
 
 # Create your own Supabase project for testing
 # 1. Go to supabase.com and create a project
-# 2. Run the SQL scripts from database/ folder
+# 2. Run: npx cursor-share-sync sql (copy/paste the SQL into Supabase)
 # 3. Create .env file with your credentials:
 echo "SUPABASE_URL=https://your-test-project.supabase.co" > .env
 echo "SUPABASE_ANON_KEY=your-test-anon-key" >> .env
