@@ -6,32 +6,47 @@
  */
 
 import { Command } from 'commander';
-import { setupWorkspace } from './utils/setup-workspace';
-import { testConnection } from './utils/test-connection';
-import { CursorShareSync } from './index';
 import * as fs from 'fs';
-import * as path from 'path';
 
 const program = new Command();
 
 program
   .name('cursor-share-sync')
   .description('Real-time file sharing for Cursor AI outputs')
-  .version('1.0.0');
+  .version('2.0.0');
 
 program
   .command('setup')
-  .description('Set up a new workspace (run this once per team)')
+  .description('Set up a new workspace (requires Supabase credentials)')
   .action(async () => {
     console.log('🏗️  Setting up new Cursor Share Sync workspace...');
+    console.log('');
+
+    // Check if .env exists with required credentials
+    if (!fs.existsSync('.env')) {
+      console.error('❌ No .env file found!');
+      console.log('\n📋 Required setup:');
+      console.log('1. Create a .env file with your Supabase credentials:');
+      console.log('   SUPABASE_URL=https://your-project.supabase.co');
+      console.log('   SUPABASE_ANON_KEY=your-anon-key');
+      console.log('');
+      console.log('2. Set up your Supabase database using the SQL files in database/');
+      console.log('3. Run this setup command again');
+      process.exit(1);
+    }
 
     try {
+      const { setupWorkspace } = await import('./utils/setup-workspace');
       const result = await setupWorkspace();
+
       console.log('\n🎉 Workspace setup complete!');
-      console.log('\n📋 Share these credentials with your team:');
-      console.log(`npx cursor-share-sync join ${result.workspaceId} ${result.accessKey}`);
+      console.log('\n📋 Share this command with your team:');
+      console.log(`\nnpx cursor-share-sync join ${result.workspaceId} ${result.accessKey} ${process.env.SUPABASE_URL} ${process.env.SUPABASE_ANON_KEY}\n`);
+      console.log('🔐 Keep all credentials secure - anyone with them can join your workspace!');
+
     } catch (error) {
       console.error('❌ Setup failed:', error);
+      console.log('\n💡 Make sure your Supabase credentials are correct and database is set up.');
       process.exit(1);
     }
   });
@@ -41,17 +56,22 @@ program
   .description('Join an existing workspace')
   .argument('<workspace-id>', 'Workspace ID from team admin')
   .argument('<access-key>', 'Access key from team admin')
+  .argument('<supabase-url>', 'Supabase URL from team admin')
+  .argument('<supabase-anon-key>', 'Supabase anon key from team admin')
   .option('-n, --name <name>', 'Your display name')
   .option('-e, --email <email>', 'Your email address')
-  .action(async (workspaceId: string, accessKey: string, options) => {
+  .action(async (workspaceId: string, accessKey: string, supabaseUrl: string, supabaseAnonKey: string, options) => {
     console.log('🤝 Joining workspace...');
 
-    // Create .env file
-    const envContent = `# Cursor Share Sync Configuration
-SUPABASE_URL=${process.env.SUPABASE_URL || 'https://wmjrycdtqrcygorokudy.supabase.co'}
-SUPABASE_ANON_KEY=${process.env.SUPABASE_ANON_KEY || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6IndtanJ5Y2R0cXJjeWdvcm9rdWR5Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTg1Nzk3MTUsImV4cCI6MjA3NDE1NTcxNX0.bKhev7W0dsMYGxFsiT81CIU5N-e8y8MtCip-k4K9vGI'}
+    // Create .env file with all required settings
+    const envContent = `# Cursor Share Sync - Team Configuration
+# Simple team file sharing for Cursor AI outputs
 
-# Team Workspace
+# Supabase Configuration (provided by admin)
+SUPABASE_URL=${supabaseUrl}
+SUPABASE_ANON_KEY=${supabaseAnonKey}
+
+# Team Workspace (provided by admin)
 WORKSPACE_ID=${workspaceId}
 WORKSPACE_ACCESS_KEY=${accessKey}
 
@@ -59,16 +79,17 @@ WORKSPACE_ACCESS_KEY=${accessKey}
 USER_DISPLAY_NAME=${options.name || 'Team Member'}
 USER_EMAIL=${options.email || ''}
 
-# File Watcher Settings
+# File Watcher Settings (customize if needed)
 WATCH_FOLDER=./cursor-share
 MAX_FILE_SIZE=10485760
 ALLOWED_EXTENSIONS=.md,.txt
 `;
 
     fs.writeFileSync('.env', envContent);
-    console.log('✅ Configuration saved to .env');
+    console.log('✅ Configuration saved');
 
     // Test connection
+    const { testConnection } = await import('./utils/test-connection');
     await testConnection();
 
     console.log('\n🎉 Successfully joined workspace!');
@@ -93,15 +114,15 @@ program
       process.exit(1);
     }
 
-    // Start the application
-    const app = new CursorShareSync();
-    await app.initialize();
+    // Import and run the main application (it will auto-initialize)
+    await import('./index');
   });
 
 program
   .command('test')
   .description('Test connection to Supabase')
   .action(async () => {
+    const { testConnection } = await import('./utils/test-connection');
     await testConnection();
   });
 

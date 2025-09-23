@@ -19,37 +19,28 @@ export class SyncService {
 
   async uploadFile(metadata: FileMetadata): Promise<string | null> {
     try {
-      console.log(`☁️  Uploading file: ${metadata.filename}`);
-
-      // 1. Upload file content to Supabase storage
       const storageKey = await this.uploadToStorage(metadata);
       if (!storageKey) {
-        throw new Error('Failed to upload to storage');
+        throw new Error('Storage upload failed');
       }
 
-      // 2. Save metadata to database
       const fileRecord = await this.saveToDatabase(metadata, storageKey);
       if (!fileRecord) {
-        throw new Error('Failed to save to database');
+        throw new Error('Database save failed');
       }
 
-      // 3. Create file event for activity tracking
       await this.createFileEvent(fileRecord.id, 'created');
-
-      console.log(`✅ Successfully uploaded: ${metadata.filename}`);
+      console.log(`✅ Synced: ${metadata.filename}`);
       return fileRecord.id;
 
     } catch (error) {
-      console.error(`❌ Upload failed for ${metadata.filename}:`, error);
+      console.error(`❌ Failed to sync ${metadata.filename}:`, error);
       return null;
     }
   }
 
   async updateFile(metadata: FileMetadata): Promise<boolean> {
     try {
-      console.log(`☁️  Updating file: ${metadata.filename}`);
-
-      // 1. Find existing file record
       const { data: existingFile, error: findError } = await supabase
         .from('files')
         .select('id, storage_path')
@@ -58,17 +49,14 @@ export class SyncService {
         .single();
 
       if (findError || !existingFile) {
-        console.log(`📄 File not found in database, creating new record`);
         return (await this.uploadFile(metadata)) !== null;
       }
 
-      // 2. Update file in storage
       const storageKey = await this.uploadToStorage(metadata, existingFile.storage_path);
       if (!storageKey) {
-        throw new Error('Failed to update storage');
+        throw new Error('Storage update failed');
       }
 
-      // 3. Update metadata in database
       const { error: updateError } = await supabase
         .from('files')
         .update({
@@ -84,14 +72,12 @@ export class SyncService {
         throw updateError;
       }
 
-      // 4. Create file event
       await this.createFileEvent(existingFile.id, 'updated');
-
-      console.log(`✅ Successfully updated: ${metadata.filename}`);
+      console.log(`✅ Updated: ${metadata.filename}`);
       return true;
 
     } catch (error) {
-      console.error(`❌ Update failed for ${metadata.filename}:`, error);
+      console.error(`❌ Failed to update ${metadata.filename}:`, error);
       return false;
     }
   }
@@ -259,24 +245,34 @@ export class SyncService {
 
   async setupRealTimeSubscription(workspaceId: string, callback: (event: any) => void): Promise<void> {
     try {
-      supabase
-        .channel('file-changes')
+      const channel = supabase
+        .channel(`workspace-${workspaceId}`)
         .on(
           'postgres_changes',
           {
             event: '*',
             schema: 'public',
             table: 'files',
-            filter: `workspace_id=eq.${workspaceId}`,
           },
-          callback
+          (payload) => {
+            // Filter by workspace client-side since RLS might be blocking
+            const newRecord = payload.new as any;
+            const oldRecord = payload.old as any;
+            if (newRecord?.workspace_id === workspaceId || oldRecord?.workspace_id === workspaceId) {
+              callback(payload);
+            }
+          }
         )
-        .subscribe();
-
-      console.log('🔔 Real-time subscription active for workspace:', workspaceId);
+        .subscribe((status) => {
+          if (status === 'SUBSCRIBED') {
+            console.log('🔔 Team notifications active');
+          } else if (status === 'CHANNEL_ERROR') {
+            console.log('⚠️  Team notifications unavailable (files will still sync)');
+          }
+        });
 
     } catch (error) {
-      console.error('❌ Real-time subscription error:', error);
+      console.log('⚠️  Real-time notifications disabled (files will still sync)');
     }
   }
 }

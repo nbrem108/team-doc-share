@@ -26,7 +26,7 @@ export interface Config {
 
 const getConfig = (): Config => {
   return {
-    // Supabase configuration
+    // Supabase configuration (required - no defaults)
     supabaseUrl: process.env.SUPABASE_URL || '',
     supabaseAnonKey: process.env.SUPABASE_ANON_KEY || '',
     supabaseServiceKey: process.env.SUPABASE_SERVICE_KEY,

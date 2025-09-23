@@ -9,14 +9,27 @@ Drop markdown files → Instant team sync → Zero manual work
 
 ## ⚡ Quick Start
 
+### Prerequisites
+You'll need a free [Supabase](https://supabase.com) account for your team's backend:
+
+1. Create a Supabase project at [supabase.com](https://supabase.com)
+2. Run the setup SQL scripts from the `database/` folder
+3. Get your project URL and anon key
+
 ### Team Admin (First-time setup)
 ```bash
+# 1. Create .env file with your Supabase credentials
+echo "SUPABASE_URL=https://your-project.supabase.co" > .env
+echo "SUPABASE_ANON_KEY=your-anon-key" >> .env
+
+# 2. Setup workspace
 npx cursor-share-sync setup
 ```
 
-### Team Members (30-second join)
+### Team Members (Join workspace)
 ```bash
-npx cursor-share-sync join <workspace-id> <access-key> --name "Your Name"
+# Use the full command provided by your team admin
+npx cursor-share-sync join <workspace-id> <access-key> <supabase-url> <supabase-anon-key> --name "Your Name"
 ```
 
 ### Daily Usage
@@ -69,16 +82,16 @@ cursor-share/
 ## 🛠️ Commands
 
 ```bash
-# Setup new workspace (admin only)
+# Setup new workspace (admin only, requires .env file)
 npx cursor-share-sync setup
 
-# Join existing workspace
-npx cursor-share-sync join <workspace-id> <access-key> --name "John Doe"
+# Join existing workspace (all parameters required)
+npx cursor-share-sync join <workspace-id> <access-key> <supabase-url> <supabase-anon-key> --name "John Doe"
 
 # Start file watching
 npx cursor-share-sync start
 
-# Test connection
+# Test connection (requires .env file or joined workspace)
 npx cursor-share-sync test
 
 # Help
@@ -87,14 +100,26 @@ npx cursor-share-sync --help
 
 ## 🚨 Troubleshooting
 
-**"Configuration validation failed"**
-- Check your internet connection
-- Verify workspace ID and access key
+**"No .env file found" or "Configuration validation failed"**
+- Create `.env` file with your Supabase credentials
+- Verify `SUPABASE_URL` and `SUPABASE_ANON_KEY` are correct
+- Check your internet connection to Supabase
+
+**"Setup failed" or "Database query failed"**
+- Ensure you've run the SQL scripts from `database/` folder in Supabase
+- Verify your Supabase project is active
+- Check the Supabase dashboard for errors
 
 **"No files syncing"**
 - Ensure files are `.md` or `.txt` format
 - Check the console for error messages
 - Run `npx cursor-share-sync test`
+- Verify all team members joined the same workspace
+
+**"Real-time sync not working"**
+- Check that real-time is enabled in your Supabase project
+- Verify network connectivity
+- Try restarting with `npx cursor-share-sync start`
 
 **Need help?** Open an [issue](https://github.com/nbrem108/cursor-share-sync/issues)
 
@@ -109,12 +134,14 @@ npx cursor-share-sync --help
 ## 📊 Example Workflow
 
 ```bash
-# Team lead sets up workspace
+# Team lead sets up Supabase and workspace
+echo "SUPABASE_URL=https://abc123.supabase.co" > .env
+echo "SUPABASE_ANON_KEY=eyJ..." >> .env
 npx cursor-share-sync setup
-# Shares: npx cursor-share-sync join abc123 xyz789
+# Shares: npx cursor-share-sync join workspace123 key456 https://abc123.supabase.co eyJ...
 
 # Developer joins and starts sharing
-npx cursor-share-sync join abc123 xyz789 --name "Alice"
+npx cursor-share-sync join workspace123 key456 https://abc123.supabase.co eyJ... --name "Alice"
 npx cursor-share-sync start
 
 # Alice saves Cursor output
@@ -123,12 +150,67 @@ echo "# API Design\n\n..." > cursor-share/sprint-1/api-design.md
 # Team sees file instantly! 🎉
 ```
 
-## 🔒 Security
+## 🔒 Security & Infrastructure
 
 - **Private workspaces** with access key authentication
-- **Encrypted transmission** via Supabase infrastructure
-- **User attribution** - see who shared what
-- **Access control** - admin can manage team members
+- **Self-hosted backend** - your team controls the Supabase instance
+- **User attribution** - see who shared what and when
+- **Access control** - workspace-based team management
+- **Secure by design** - no credentials stored in source code
+
+## 🤝 Contributing
+
+We welcome contributions! Here's how to get started:
+
+### Development Setup
+```bash
+# Clone the repository
+git clone https://github.com/nbrem108/cursor-share-sync.git
+cd cursor-share-sync
+
+# Install dependencies
+npm install
+
+# Create your own Supabase project for testing
+# 1. Go to supabase.com and create a project
+# 2. Run the SQL scripts from database/ folder
+# 3. Create .env file with your credentials:
+echo "SUPABASE_URL=https://your-test-project.supabase.co" > .env
+echo "SUPABASE_ANON_KEY=your-test-anon-key" >> .env
+
+# Build and test
+npm run build
+npm test
+```
+
+### Making Changes
+1. **Fork** the repository
+2. **Create** a feature branch: `git checkout -b feature/amazing-feature`
+3. **Make** your changes
+4. **Test** your changes: `npm run build && npm test`
+5. **Commit** your changes: `git commit -m 'Add amazing feature'`
+6. **Push** to your branch: `git push origin feature/amazing-feature`
+7. **Open** a Pull Request
+
+### Development Commands
+```bash
+npm run build          # Compile TypeScript
+npm run dev           # Development mode with hot reload
+npm run lint          # Check code style
+npm run lint:fix      # Fix code style issues
+npm run format        # Format code with Prettier
+```
+
+### Architecture
+- **TypeScript** - Type-safe JavaScript
+- **Supabase** - Backend database and real-time subscriptions
+- **chokidar** - Cross-platform file watching
+- **commander** - CLI framework
+
+### Need Help?
+- 📖 Check existing [issues](https://github.com/nbrem108/cursor-share-sync/issues)
+- 💬 Open a [discussion](https://github.com/nbrem108/cursor-share-sync/discussions)
+- 🐛 Report bugs via [issues](https://github.com/nbrem108/cursor-share-sync/issues/new)
 
 ## 📜 License
 

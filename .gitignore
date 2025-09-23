@@ -59,3 +59,15 @@ jspm_packages/
 # Test files
 test-files/
 cursor-share/
+
+# IDE and development files
+.claude/
+.cursor/
+
+# Development artifacts
+implementation-tasks.md
+project-scope.md
+PUBLISH_CHECKLIST.md
+
+# Unused directories
+web/

@@ -18,23 +18,20 @@ class CursorShareSync {
   }
 
   async initialize() {
-    console.log('🚀 Cursor Share Sync - Starting...');
+    console.log('🚀 Cursor Share Sync starting...');
 
     // Validate configuration
     if (!validateConfig()) {
-      console.error('❌ Configuration validation failed');
+      console.error('❌ Configuration error - check your .env file');
       process.exit(1);
     }
 
     try {
-      // Initialize Supabase connection
-      console.log('🔧 Initializing Supabase connection...');
+      // Initialize Supabase connection (silent)
       initializeSupabase();
-      console.log('✅ Supabase connection ready');
 
       // Set up real-time subscriptions if workspace is configured
       if (config.workspaceId) {
-        console.log('🔔 Setting up real-time subscriptions...');
         await this.syncService.setupRealTimeSubscription(
           config.workspaceId,
           this.handleRealTimeEvent.bind(this)
@@ -42,17 +39,21 @@ class CursorShareSync {
       }
 
       // Start file watcher
-      console.log('👀 Starting file watcher...');
       this.fileWatcher.start();
 
-      console.log('\n🎉 Cursor Share Sync is ready!');
-      console.log(`📁 Watching folder: ${config.watchFolder}`);
-      console.log(`🔗 Workspace ID: ${config.workspaceId || 'default'}`);
-      console.log(`👤 User ID: ${config.userId || 'anonymous'}`);
-      console.log('\n💡 Drop markdown files into the watch folder to sync them instantly!');
+      console.log('✅ Ready! Watching for files...');
+      console.log(`📁 Folder: ${config.watchFolder}`);
+
+      if (config.workspaceId) {
+        console.log(`👥 Workspace: ${config.workspaceId.substring(0, 8)}...`);
+      } else {
+        console.log('⚠️  No workspace configured - files will only be saved locally');
+        console.log('💡 Run "npx cursor-share-sync setup" or "join" to enable team sharing');
+      }
+      console.log('');
 
     } catch (error) {
-      console.error('❌ Initialization failed:', error);
+      console.error('❌ Failed to start:', error);
       process.exit(1);
     }
   }
@@ -62,13 +63,19 @@ class CursorShareSync {
 
     switch (eventType) {
       case 'INSERT':
-        console.log(`🔔 New file shared: ${newRecord.filename}`);
+        if (newRecord && newRecord.filename) {
+          console.log(`📄 Team file added: ${newRecord.filename}`);
+        }
         break;
       case 'UPDATE':
-        console.log(`🔔 File updated: ${newRecord.filename}`);
+        if (newRecord && newRecord.filename) {
+          console.log(`📝 Team file updated: ${newRecord.filename}`);
+        }
         break;
       case 'DELETE':
-        console.log(`🔔 File deleted: ${oldRecord.filename}`);
+        if (oldRecord && oldRecord.filename) {
+          console.log(`🗑️ Team file deleted: ${oldRecord.filename}`);
+        }
         break;
     }
   }

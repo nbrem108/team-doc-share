@@ -96,14 +96,13 @@ export class FileWatcher {
       return;
     }
 
-    console.log(`📄 File ${eventType}: ${path.basename(filePath)}`);
+    const filename = path.basename(filePath);
+    console.log(`📄 ${eventType === 'unlink' ? 'Deleting' : 'Syncing'} ${filename}...`);
 
     try {
       if (eventType === 'unlink') {
-        // Handle file deletion
         await this.handleFileDelete(filePath);
       } else {
-        // Handle file creation or modification
         const metadata = await this.getFileMetadata(filePath);
         if (metadata) {
           if (eventType === 'add') {
@@ -116,20 +115,18 @@ export class FileWatcher {
 
       this.status.lastSync = new Date();
     } catch (error) {
-      console.error(`❌ Error handling ${eventType} for ${filePath}:`, error);
+      console.error(`❌ Failed to sync ${filename}:`, error);
       this.status.errorCount++;
     }
   }
 
   private async handleFileCreate(metadata: FileMetadata) {
-    console.log(`➕ Creating file: ${metadata.filename}`);
     const { SyncService } = await import('./sync-service');
     const syncService = SyncService.getInstance();
     await syncService.uploadFile(metadata);
   }
 
   private async handleFileUpdate(metadata: FileMetadata) {
-    console.log(`✏️  Updating file: ${metadata.filename}`);
     const { SyncService } = await import('./sync-service');
     const syncService = SyncService.getInstance();
     await syncService.updateFile(metadata);
@@ -137,7 +134,6 @@ export class FileWatcher {
 
   private async handleFileDelete(filePath: string) {
     const filename = path.basename(filePath);
-    console.log(`🗑️  Deleting file: ${filename}`);
     const { SyncService } = await import('./sync-service');
     const syncService = SyncService.getInstance();
     await syncService.deleteFile(filename, config.workspaceId || 'default');
@@ -145,12 +141,8 @@ export class FileWatcher {
 
   public start(): void {
     if (this.status.isRunning) {
-      console.log('⚠️  File watcher is already running');
       return;
     }
-
-    console.log(`👀 Starting file watcher on: ${config.watchFolder}`);
-    console.log(`📋 Watching extensions: ${config.allowedExtensions.join(', ')}`);
 
     this.watcher = chokidar.watch(config.watchFolder, {
       ignored: /(^|[\/\\])\../, // ignore dotfiles
@@ -167,7 +159,6 @@ export class FileWatcher {
         this.status.errorCount++;
       })
       .on('ready', () => {
-        console.log('✅ File watcher ready');
         this.status.isRunning = true;
         this.updateFileCount();
       });
@@ -186,7 +177,9 @@ export class FileWatcher {
     try {
       const files = this.getAllWatchedFiles();
       this.status.filesWatched = files.length;
-      console.log(`📊 Watching ${files.length} files`);
+      if (files.length > 0) {
+        console.log(`📊 Found ${files.length} existing files`);
+      }
     } catch (error) {
       console.error('❌ Error counting files:', error);
     }
