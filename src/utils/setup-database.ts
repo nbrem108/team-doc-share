@@ -48,7 +48,7 @@ async function setupDatabase() {
     // Create storage bucket
     console.log('📁 Setting up file storage...');
     const { error: bucketError } = await supabase.storage.createBucket(
-      'cursor-files',
+      'team-doc-files',
       { public: false }
     );
 

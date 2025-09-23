@@ -155,7 +155,7 @@ program
       } else {
         console.error('❌ SQL file not found in package');
         console.log('\n📥 Download directly from:');
-        console.log('https://github.com/nbrem108/cursor-share-sync/blob/main/database/complete_setup.sql');
+        console.log('https://github.com/nbrem108/team-doc-share/blob/main/database/complete_setup.sql');
         process.exit(1);
       }
 

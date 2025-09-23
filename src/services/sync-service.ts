@@ -113,7 +113,7 @@ export class SyncService {
       // 2. Delete from storage
       if (existingFile.storage_path) {
         const { error: storageError } = await supabase.storage
-          .from('cursor-files')
+          .from('team-doc-files')
           .remove([existingFile.storage_path]);
 
         if (storageError) {
@@ -153,7 +153,7 @@ export class SyncService {
 
       // Upload to Supabase storage
       const { data, error } = await supabase.storage
-        .from('cursor-files')
+        .from('team-doc-files')
         .upload(storagePath, fileBlob, {
           upsert: true, // Overwrite if exists
           contentType: metadata.mimeType,
@@ -270,7 +270,7 @@ export class SyncService {
 
       // Download file content from storage
       const { data: fileData, error: storageError } = await supabase.storage
-        .from('cursor-files')
+        .from('team-doc-files')
         .download(fileRecord.storage_path);
 
       if (storageError || !fileData) {
