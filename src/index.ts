@@ -79,9 +79,31 @@ class CursorShareSync {
       case 'DELETE':
         if (oldRecord && oldRecord.filename) {
           console.log(`🗑️ Team file deleted: ${oldRecord.filename}`);
-          // TODO: Remove file from local folder
+          // Remove file from local folder
+          await this.handleLocalFileDelete(oldRecord);
         }
         break;
+    }
+  }
+
+  private async handleLocalFileDelete(fileRecord: any) {
+    try {
+      const fs = await import('fs');
+      const path = await import('path');
+
+      // Use original_path to preserve folder structure, fallback to filename
+      const relativePath = fileRecord.original_path || fileRecord.filename;
+      const localPath = path.join(config.watchFolder, relativePath);
+
+      if (fs.existsSync(localPath)) {
+        // Mark file as recently downloaded to prevent upload when we delete it
+        this.fileWatcher.markAsDownloaded(relativePath);
+
+        fs.unlinkSync(localPath);
+        console.log(`🗑️ Removed local file: ${fileRecord.filename}`);
+      }
+    } catch (error) {
+      console.error(`❌ Failed to delete local file: ${fileRecord.filename}`, error);
     }
   }
 

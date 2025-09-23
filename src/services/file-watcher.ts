@@ -114,9 +114,10 @@ export class FileWatcher {
     }
 
     const filename = path.basename(filePath);
+    const relativePath = path.relative(config.watchFolder, filePath);
 
     // Skip files that were recently downloaded to prevent infinite loop
-    if (this.recentlyDownloaded.has(filename)) {
+    if (this.recentlyDownloaded.has(relativePath)) {
       console.log(`⏭️  Skipping recently downloaded file: ${filename}`);
       return;
     }
@@ -157,10 +158,10 @@ export class FileWatcher {
   }
 
   private async handleFileDelete(filePath: string) {
-    const filename = path.basename(filePath);
+    const relativePath = path.relative(config.watchFolder, filePath);
     const { SyncService } = await import('./sync-service');
     const syncService = SyncService.getInstance();
-    await syncService.deleteFile(filename, config.workspaceId || 'default');
+    await syncService.deleteFile(relativePath, config.workspaceId || 'default');
   }
 
   public start(): void {

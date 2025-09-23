@@ -82,17 +82,28 @@ export class SyncService {
     }
   }
 
-  async deleteFile(filename: string, workspaceId: string): Promise<boolean> {
+  async deleteFile(relativePath: string, workspaceId: string): Promise<boolean> {
+    const filename = relativePath.split(/[/\\]/).pop() || relativePath;
     try {
       console.log(`☁️  Deleting file: ${filename}`);
 
-      // 1. Find existing file record
-      const { data: existingFile, error: findError } = await supabase
+      // 1. Find existing file record by original_path (preferred) or filename (fallback)
+      let { data: existingFile, error: findError } = await supabase
         .from('files')
-        .select('id, storage_path')
-        .eq('filename', filename)
+        .select('id, storage_path, filename')
+        .eq('original_path', relativePath)
         .eq('workspace_id', workspaceId)
         .single();
+
+      // Fallback to filename search if path search fails
+      if (findError || !existingFile) {
+        ({ data: existingFile, error: findError } = await supabase
+          .from('files')
+          .select('id, storage_path, filename')
+          .eq('filename', filename)
+          .eq('workspace_id', workspaceId)
+          .single());
+      }
 
       if (findError || !existingFile) {
         console.log(`⚠️  File not found in database: ${filename}`);
@@ -274,7 +285,9 @@ export class SyncService {
       const fs = await import('fs');
       const path = await import('path');
 
-      const localPath = path.join(config.watchFolder, fileRecord.filename);
+      // Use original_path to preserve folder structure, fallback to filename if not available
+      const relativePath = fileRecord.original_path || fileRecord.filename;
+      const localPath = path.join(config.watchFolder, relativePath);
 
       // Create directory if it doesn't exist
       const dir = path.dirname(localPath);
@@ -287,7 +300,7 @@ export class SyncService {
       // Mark file as recently downloaded to prevent upload loop
       const { FileWatcher } = await import('./file-watcher');
       const fileWatcher = FileWatcher.getInstance();
-      fileWatcher.markAsDownloaded(fileRecord.filename);
+      fileWatcher.markAsDownloaded(relativePath);
 
       console.log(`📥 Downloaded: ${fileRecord.filename}`);
       return true;
