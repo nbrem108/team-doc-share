@@ -3,12 +3,12 @@ import { config } from '../config';
 import { WorkspaceAccess } from './user-identity';
 import * as crypto from 'crypto';
 
-const supabase = getSupabaseClient();
-
 async function setupWorkspace() {
   console.log('🏗️  Setting up test workspace...');
 
   try {
+    // Initialize supabase client (lazy loading to ensure config is loaded)
+    const supabase = getSupabaseClient();
     // Generate unique IDs
     const workspaceId = crypto.randomUUID();
     const userId = crypto.randomUUID(); // Generate a proper UUID
@@ -47,8 +47,18 @@ async function setupWorkspace() {
 
     return { workspaceId, accessKey };
 
-  } catch (error) {
+  } catch (error: any) {
     console.error('❌ Workspace setup failed:', error);
+
+    if (error.message && error.message.includes('Invalid API key')) {
+      console.log('\n💡 "Invalid API key" usually means the database isn\'t set up yet.');
+      console.log('📋 Try this first:');
+      console.log('   1. Run: npx cursor-share-sync sql');
+      console.log('   2. Copy and paste the SQL into your Supabase SQL Editor');
+      console.log('   3. Run the SQL to create tables');
+      console.log('   4. Then try setup again');
+    }
+
     throw error;
   }
 }

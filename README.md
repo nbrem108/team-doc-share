@@ -13,10 +13,12 @@ Drop markdown files → Instant team sync → Zero manual work
 You'll need a free [Supabase](https://supabase.com) account for your team's backend:
 
 1. **Create a Supabase project** at [supabase.com](https://supabase.com)
-2. **Set up the database** with one SQL file:
-   - Go to your Supabase dashboard → SQL Editor
-   - Copy and run: [`complete_setup.sql`](https://github.com/nbrem108/cursor-share-sync/blob/main/database/complete_setup.sql)
-   - Or find it locally: `node_modules/cursor-share-sync/database/complete_setup.sql`
+2. **Set up the database** with one command:
+   ```bash
+   npx cursor-share-sync sql
+   ```
+   - Copy the displayed SQL and paste into Supabase SQL Editor
+   - Click "Run" to create all tables and settings
 3. **Get credentials** from Supabase Settings → API (URL + anon key)
 
 **No git clone required!** Everything works via NPX.
@@ -87,6 +89,9 @@ cursor-share/
 ## 🛠️ Commands
 
 ```bash
+# Get database setup SQL (copy/paste into Supabase)
+npx cursor-share-sync sql
+
 # Setup new workspace (admin only, requires .env file)
 npx cursor-share-sync setup
 

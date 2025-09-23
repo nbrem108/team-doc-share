@@ -7,13 +7,14 @@
 
 import { Command } from 'commander';
 import * as fs from 'fs';
+import * as path from 'path';
 
 const program = new Command();
 
 program
   .name('cursor-share-sync')
   .description('Real-time file sharing for Cursor AI outputs')
-  .version('2.0.2');
+  .version('2.0.3');
 
 program
   .command('setup')
@@ -22,17 +23,21 @@ program
     console.log('🏗️  Setting up new Cursor Share Sync workspace...');
     console.log('');
 
-    // Check if .env exists with required credentials
-    if (!fs.existsSync('.env')) {
-      console.error('❌ No .env file found!');
+    // Check if .env exists in current working directory
+    const envPath = path.join(process.cwd(), '.env');
+    if (!fs.existsSync(envPath)) {
+      console.error('❌ No .env file found in current directory!');
+      console.log(`\n📁 Looking for: ${envPath}`);
       console.log('\n📋 Required setup:');
-      console.log('1. Create a .env file with your Supabase credentials:');
+      console.log('1. Create a .env file in your current directory with Supabase credentials:');
       console.log('   SUPABASE_URL=https://your-project.supabase.co');
-      console.log('   SUPABASE_ANON_KEY=your-anon-key');
+      console.log('   SUPABASE_ANON_KEY=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...');
+      console.log('   💡 Use the legacy/longer anon key from Settings → API, not the short key!');
       console.log('');
       console.log('2. Set up your Supabase database:');
       console.log('   - In your Supabase dashboard, go to SQL Editor');
-      console.log('   - Copy and run: node_modules/cursor-share-sync/database/complete_setup.sql');
+      console.log('   - Run: npx cursor-share-sync sql (to display the SQL)');
+      console.log('   - Copy and paste the displayed SQL into Supabase');
       console.log('   - Or download from: https://github.com/nbrem108/cursor-share-sync/blob/main/database/complete_setup.sql');
       console.log('3. Run this setup command again');
       process.exit(1);
@@ -108,12 +113,14 @@ program
   .action(async () => {
     console.log('🚀 Starting Cursor Share Sync...');
 
-    // Check if .env exists
-    if (!fs.existsSync('.env')) {
+    // Check if .env exists in current working directory
+    const envPath = path.join(process.cwd(), '.env');
+    if (!fs.existsSync(envPath)) {
       console.error('❌ No configuration found!');
+      console.log(`\n📁 Looking for: ${envPath}`);
       console.log('\nFirst time setup:');
       console.log('• Team admin: npx cursor-share-sync setup');
-      console.log('• Team members: npx cursor-share-sync join <workspace-id> <access-key>');
+      console.log('• Team members: npx cursor-share-sync join <workspace-id> <access-key> <supabase-url> <supabase-anon-key>');
       process.exit(1);
     }
 
@@ -127,6 +134,40 @@ program
   .action(async () => {
     const { testConnection } = await import('./utils/test-connection');
     await testConnection();
+  });
+
+program
+  .command('sql')
+  .description('Display the database setup SQL (copy and paste into Supabase)')
+  .action(async () => {
+    const fs = await import('fs');
+    const path = await import('path');
+
+    try {
+      // Try to find SQL file in npm package first
+      const npmSqlPath = path.join(__dirname, '..', 'database', 'complete_setup.sql');
+      let sqlContent = '';
+
+      if (fs.existsSync(npmSqlPath)) {
+        sqlContent = fs.readFileSync(npmSqlPath, 'utf8');
+      } else {
+        console.error('❌ SQL file not found in package');
+        console.log('\n📥 Download directly from:');
+        console.log('https://github.com/nbrem108/cursor-share-sync/blob/main/database/complete_setup.sql');
+        process.exit(1);
+      }
+
+      console.log('📋 Copy the SQL below and paste into your Supabase SQL Editor:');
+      console.log('=' .repeat(70));
+      console.log(sqlContent);
+      console.log('=' .repeat(70));
+      console.log('\n✅ After running this SQL, come back and run: npx cursor-share-sync setup');
+
+    } catch (error) {
+      console.error('❌ Error reading SQL file:', error);
+      console.log('\n📥 Download directly from:');
+      console.log('https://github.com/nbrem108/cursor-share-sync/blob/main/database/complete_setup.sql');
+    }
   });
 
 program.parse();

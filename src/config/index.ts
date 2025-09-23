@@ -1,7 +1,8 @@
 import * as dotenv from 'dotenv';
 import * as path from 'path';
 
-dotenv.config();
+// Load .env from current working directory (where user runs the command)
+dotenv.config({ path: path.join(process.cwd(), '.env') });
 
 export interface Config {
   // Supabase configuration

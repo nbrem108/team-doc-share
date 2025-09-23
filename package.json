@@ -1,6 +1,6 @@
 {
   "name": "cursor-share-sync",
-  "version": "2.0.2",
+  "version": "2.0.3",
   "main": "dist/index.js",
   "bin": {
     "cursor-share-sync": "dist/cli.js"
