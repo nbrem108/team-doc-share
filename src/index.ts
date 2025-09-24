@@ -36,6 +36,10 @@ class CursorShareSync {
           config.workspaceId,
           this.handleRealTimeEvent.bind(this)
         );
+
+        // Sync existing files from workspace on startup
+        console.log('🔄 Syncing existing workspace files...');
+        await this.syncExistingFiles();
       }
 
       // Start file watcher
@@ -55,6 +59,77 @@ class CursorShareSync {
     } catch (error) {
       console.error('❌ Failed to start:', error);
       process.exit(1);
+    }
+  }
+
+  private async syncExistingFiles() {
+    try {
+      if (!config.workspaceId) return;
+
+      // Get all files from the workspace
+      const workspaceFiles = await this.syncService.getWorkspaceFiles(config.workspaceId);
+
+      if (!workspaceFiles || workspaceFiles.length === 0) {
+        console.log('📊 Found 0 existing files');
+        return;
+      }
+
+      console.log(`📊 Found ${workspaceFiles.length} existing files`);
+
+      // Download each file that doesn't exist locally or is outdated
+      let downloadedCount = 0;
+      let skippedCount = 0;
+
+      for (const file of workspaceFiles) {
+        const shouldDownload = await this.shouldDownloadFile(file);
+
+        if (shouldDownload) {
+          // Mark as downloaded to prevent upload when file is created locally
+          this.fileWatcher.markAsDownloaded(file.original_path || file.filename);
+
+          const success = await this.syncService.downloadFile(file.id);
+          if (success) {
+            downloadedCount++;
+            console.log(`📄 Downloaded: ${file.filename}`);
+          }
+        } else {
+          skippedCount++;
+        }
+      }
+
+      if (downloadedCount > 0) {
+        console.log(`✅ Downloaded ${downloadedCount} files, skipped ${skippedCount} existing files`);
+      } else {
+        console.log('✅ All files are up to date');
+      }
+
+    } catch (error) {
+      console.error('⚠️  Failed to sync existing files (will continue with real-time sync):', error);
+    }
+  }
+
+  private async shouldDownloadFile(file: any): Promise<boolean> {
+    try {
+      const fs = await import('fs');
+      const path = await import('path');
+
+      const relativePath = file.original_path || file.filename;
+      const localPath = path.join(config.watchFolder, relativePath);
+
+      // If file doesn't exist locally, download it
+      if (!fs.existsSync(localPath)) {
+        return true;
+      }
+
+      // If file exists, check if remote is newer
+      const localStats = fs.statSync(localPath);
+      const remoteUpdated = new Date(file.updated_at);
+      const localUpdated = localStats.mtime;
+
+      return remoteUpdated > localUpdated;
+    } catch (error) {
+      // If we can't check, err on the side of downloading
+      return true;
     }
   }
 

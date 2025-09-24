@@ -382,4 +382,24 @@ export class SyncService {
       return null;
     }
   }
+
+  async getWorkspaceFiles(workspaceId: string): Promise<any[] | null> {
+    try {
+      const { data: files, error } = await supabase
+        .from('files')
+        .select('id, filename, original_path, updated_at, uploaded_by, size')
+        .eq('workspace_id', workspaceId)
+        .order('updated_at', { ascending: false });
+
+      if (error) {
+        console.error('❌ Error fetching workspace files:', error);
+        return null;
+      }
+
+      return files || [];
+    } catch (error) {
+      console.error('❌ Error getting workspace files:', error);
+      return null;
+    }
+  }
 }
