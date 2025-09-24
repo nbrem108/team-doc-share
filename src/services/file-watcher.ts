@@ -3,6 +3,7 @@ import * as path from 'path';
 import * as fs from 'fs';
 import { config } from '../config';
 import { FileMetadata, WatcherStatus } from '../types';
+import { SyncService } from './sync-service';
 
 export class FileWatcher {
   private watcher: chokidar.FSWatcher | null = null;
@@ -52,8 +53,11 @@ export class FileWatcher {
       const originalContent = fs.readFileSync(filePath, 'utf8');
       const filename = path.basename(filePath);
 
-      // Add attribution header for markdown files
-      const content = this.addAttributionHeader(originalContent, filename);
+      // Get previous version for diff tracking
+      const previousContent = await this.getPreviousFileContent(filename);
+
+      // Add attribution header with diff information
+      const content = await this.addAttributionHeader(originalContent, filename, previousContent);
       const relativePath = path.relative(config.watchFolder, filePath);
 
       // Check file size limit
@@ -86,7 +90,17 @@ export class FileWatcher {
     }
   }
 
-  private addAttributionHeader(content: string, filename: string): string {
+  private async getPreviousFileContent(filename: string): Promise<string | null> {
+    try {
+      const syncService = SyncService.getInstance();
+      return await syncService.getFileContent(filename, config.workspaceId || 'default');
+    } catch (error) {
+      // File doesn't exist yet, this is a new file
+      return null;
+    }
+  }
+
+  private addAttributionHeader(content: string, filename: string, previousContent?: string | null): string {
     const ext = path.extname(filename).toLowerCase();
     const userName = config.userDisplayName || config.userEmail || 'Team Member';
     const timestamp = new Date().toLocaleString();
@@ -109,14 +123,30 @@ export class FileWatcher {
 `;
         return attributionHeader + content;
       } else {
-        // Existing file - add amendment to history
+        // Existing file - add amendment to history with diff information
         const historyPattern = /(\*\*📝 Edit History:\*\*\n(?:- .+\n)*)/;
         const match = content.match(historyPattern);
 
         if (match) {
-          const newHistoryEntry = `- Updated by ${userName} on ${timestamp}\n`;
+          // Generate diff information
+          let diffInfo = '';
+          if (previousContent) {
+            const changes = this.generateDiffInfo(previousContent, content);
+            if (changes.length > 0) {
+              diffInfo = `\n  ${changes.join('\n  ')}`;
+            }
+          }
+
+          const newHistoryEntry = `- Updated by ${userName} on ${timestamp}${diffInfo}\n`;
           const updatedHistory = match[1] + newHistoryEntry;
-          return content.replace(historyPattern, updatedHistory);
+
+          // Also add inline comments for changes
+          let updatedContent = content.replace(historyPattern, updatedHistory);
+          if (previousContent) {
+            updatedContent = this.addInlineChangeComments(updatedContent, previousContent, userName, timestamp);
+          }
+
+          return updatedContent;
         }
       }
     }
@@ -147,6 +177,77 @@ EDIT HISTORY:
           return content.replace(historyPattern, updatedHistory);
         }
       }
+    }
+
+    return content;
+  }
+
+  private generateDiffInfo(previousContent: string, currentContent: string): string[] {
+    const changes: string[] = [];
+
+    // Remove attribution headers for comparison
+    const cleanPrevious = this.removeAttributionHeaders(previousContent);
+    const cleanCurrent = this.removeAttributionHeaders(currentContent);
+
+    const previousLines = cleanPrevious.split('\n');
+    const currentLines = cleanCurrent.split('\n');
+
+    // Simple diff algorithm - detect line changes, additions, and deletions
+    let lineNum = 1;
+    let prevIndex = 0;
+    let currIndex = 0;
+
+    while (prevIndex < previousLines.length || currIndex < currentLines.length) {
+      if (prevIndex >= previousLines.length) {
+        // Added lines at the end
+        const addedCount = currentLines.length - currIndex;
+        changes.push(`Lines ${lineNum}-${lineNum + addedCount - 1}: Added new content`);
+        break;
+      } else if (currIndex >= currentLines.length) {
+        // Deleted lines at the end
+        const deletedCount = previousLines.length - prevIndex;
+        changes.push(`Lines ${lineNum}: Deleted ${deletedCount} line(s)`);
+        break;
+      } else if (previousLines[prevIndex] !== currentLines[currIndex]) {
+        // Line changed
+        changes.push(`Line ${lineNum}: Modified content`);
+        prevIndex++;
+        currIndex++;
+        lineNum++;
+      } else {
+        // Lines are the same
+        prevIndex++;
+        currIndex++;
+        lineNum++;
+      }
+    }
+
+    return changes.slice(0, 5); // Limit to first 5 changes to keep header readable
+  }
+
+  private addInlineChangeComments(content: string, previousContent: string, userName: string, timestamp: string): string {
+    // For now, add a simple comment at the end indicating changes were made
+    // This prevents the file from becoming too cluttered with inline comments
+    const changeComment = `\n<!-- Changes made by ${userName} on ${timestamp} -->\n`;
+
+    // Find the end of the attribution section
+    const endOfAttribution = content.indexOf('---\n');
+    if (endOfAttribution !== -1) {
+      const beforeAttribution = content.substring(0, endOfAttribution + 4);
+      const afterAttribution = content.substring(endOfAttribution + 4);
+      return beforeAttribution + changeComment + afterAttribution;
+    }
+
+    return content + changeComment;
+  }
+
+  private removeAttributionHeaders(content: string): string {
+    // Remove attribution headers for clean comparison
+    const attributionStart = content.indexOf('<!-- Team Doc Share Attribution -->');
+    const contentStart = content.indexOf('---\n');
+
+    if (attributionStart !== -1 && contentStart !== -1) {
+      return content.substring(contentStart + 4);
     }
 
     return content;

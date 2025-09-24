@@ -343,4 +343,43 @@ export class SyncService {
       console.log('⚠️  Real-time notifications disabled (files will still sync)');
     }
   }
+
+  async getFileContent(filename: string, workspaceId: string): Promise<string | null> {
+    try {
+      // Get file record from database
+      const { data: fileRecord, error: dbError } = await supabase
+        .from('files')
+        .select('storage_path, content')
+        .eq('filename', filename)
+        .eq('workspace_id', workspaceId)
+        .single();
+
+      if (dbError || !fileRecord) {
+        return null; // File doesn't exist
+      }
+
+      // If content is stored in database, return it directly
+      if (fileRecord.content) {
+        return fileRecord.content;
+      }
+
+      // Otherwise, download from storage
+      if (fileRecord.storage_path) {
+        const { data: fileData, error: storageError } = await supabase.storage
+          .from('team-doc-files')
+          .download(fileRecord.storage_path);
+
+        if (storageError || !fileData) {
+          return null;
+        }
+
+        return await fileData.text();
+      }
+
+      return null;
+    } catch (error) {
+      console.error(`❌ Error getting file content for ${filename}:`, error);
+      return null;
+    }
+  }
 }
