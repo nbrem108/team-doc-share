@@ -87,6 +87,8 @@ export interface Config {
   // Team workspace configuration
   workspaceId?: string;
   userId?: string;
+  userDisplayName?: string;
+  userEmail?: string;
 }
 
 const getConfig = (): Config => {
@@ -116,6 +118,8 @@ const getConfig = (): Config => {
     // Team workspace configuration
     workspaceId: process.env.WORKSPACE_ID,
     userId: process.env.USER_ID,
+    userDisplayName: process.env.USER_DISPLAY_NAME,
+    userEmail: process.env.USER_EMAIL,
   };
 };
 

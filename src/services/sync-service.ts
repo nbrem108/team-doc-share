@@ -30,7 +30,7 @@ export class SyncService {
       }
 
       await this.createFileEvent(fileRecord.id, 'created');
-      console.log(`✅ Synced: ${metadata.filename}`);
+      console.log(`✅ Synced by ${metadata.uploadedBy}: ${metadata.filename}`);
       return fileRecord.id;
 
     } catch (error) {

@@ -49,8 +49,11 @@ export class FileWatcher {
   private async getFileMetadata(filePath: string): Promise<FileMetadata | null> {
     try {
       const stats = fs.statSync(filePath);
-      const content = fs.readFileSync(filePath, 'utf8');
+      const originalContent = fs.readFileSync(filePath, 'utf8');
       const filename = path.basename(filePath);
+
+      // Add attribution header for markdown files
+      const content = this.addAttributionHeader(originalContent, filename);
       const relativePath = path.relative(config.watchFolder, filePath);
 
       // Check file size limit
@@ -72,7 +75,7 @@ export class FileWatcher {
         mimeType: this.getMimeType(filename),
         uploadedAt: new Date(),
         updatedAt: new Date(),
-        uploadedBy: config.userId || 'anonymous',
+        uploadedBy: config.userDisplayName || config.userEmail || config.userId || 'anonymous',
         workspaceId: config.workspaceId || 'default',
         sprintFolder,
         tags: this.extractTags(content),
@@ -81,6 +84,72 @@ export class FileWatcher {
       console.error(`❌ Error reading file ${filePath}:`, error);
       return null;
     }
+  }
+
+  private addAttributionHeader(content: string, filename: string): string {
+    const ext = path.extname(filename).toLowerCase();
+    const userName = config.userDisplayName || config.userEmail || 'Team Member';
+    const timestamp = new Date().toLocaleString();
+
+    // For markdown files
+    if (ext === '.md') {
+      // Check if this is a new file or an update
+      if (!content.includes('<!-- Team Doc Share Attribution -->')) {
+        // New file - add initial attribution
+        const attributionHeader = `<!-- Team Doc Share Attribution -->
+> **Originally shared by:** ${userName}
+> **Date:** ${timestamp}
+> **File:** ${filename}
+
+**📝 Edit History:**
+- Created by ${userName} on ${timestamp}
+
+---
+
+`;
+        return attributionHeader + content;
+      } else {
+        // Existing file - add amendment to history
+        const historyPattern = /(\*\*📝 Edit History:\*\*\n(?:- .+\n)*)/;
+        const match = content.match(historyPattern);
+
+        if (match) {
+          const newHistoryEntry = `- Updated by ${userName} on ${timestamp}\n`;
+          const updatedHistory = match[1] + newHistoryEntry;
+          return content.replace(historyPattern, updatedHistory);
+        }
+      }
+    }
+
+    // For text files
+    if (ext === '.txt') {
+      if (!content.includes('=== SHARED BY ===')) {
+        // New file
+        const attributionHeader = `=== SHARED BY ===
+Originally shared by: ${userName}
+Date: ${timestamp}
+File: ${filename}
+
+EDIT HISTORY:
+- Created by ${userName} on ${timestamp}
+==================
+
+`;
+        return attributionHeader + content;
+      } else {
+        // Existing file - add to history
+        const historyPattern = /(EDIT HISTORY:\n(?:- .+\n)*)/;
+        const match = content.match(historyPattern);
+
+        if (match) {
+          const newHistoryEntry = `- Updated by ${userName} on ${timestamp}\n`;
+          const updatedHistory = match[1] + newHistoryEntry;
+          return content.replace(historyPattern, updatedHistory);
+        }
+      }
+    }
+
+    return content;
   }
 
   private getMimeType(filename: string): string {

@@ -50,8 +50,9 @@ program
       const result = await setupWorkspace();
 
       console.log('\n🎉 Workspace setup complete!');
-      console.log('\n📋 Share this command with your team:');
-      console.log(`\nnpx team-doc-share join ${result.workspaceId} ${result.accessKey} ${process.env.SUPABASE_URL} ${process.env.SUPABASE_ANON_KEY}\n`);
+      console.log('\n📋 Share this command with your team (copy exactly):');
+      console.log(`\nnpx team-doc-share join ${result.workspaceId} ${result.accessKey} ${process.env.SUPABASE_URL} "${process.env.SUPABASE_ANON_KEY}"\n`);
+      console.log('💡 Important: The anon key is quoted to prevent truncation issues');
       console.log('🔐 Keep all credentials secure - anyone with them can join your workspace!');
 
     } catch (error) {
@@ -72,6 +73,46 @@ program
   .option('-e, --email <email>', 'Your email address')
   .action(async (workspaceId: string, accessKey: string, supabaseUrl: string, supabaseAnonKey: string, options) => {
     console.log('🤝 Joining workspace...');
+
+    // Validate inputs
+    console.log('🔍 Validating credentials...');
+
+    if (!workspaceId || workspaceId.length < 10) {
+      console.error('❌ Invalid workspace ID. Should be a long UUID.');
+      process.exit(1);
+    }
+
+    if (!accessKey || accessKey.length < 20) {
+      console.error('❌ Invalid access key. Should be a long base64 string.');
+      process.exit(1);
+    }
+
+    if (!supabaseUrl || !supabaseUrl.includes('.supabase.co')) {
+      console.error('❌ Invalid Supabase URL. Should end with .supabase.co');
+      process.exit(1);
+    }
+
+    if (!supabaseAnonKey || !supabaseAnonKey.startsWith('eyJ') || supabaseAnonKey.length < 100) {
+      console.error('❌ Invalid anon key. Should start with "eyJ" and be 100+ characters long.');
+      console.log(`📏 Received key length: ${supabaseAnonKey ? supabaseAnonKey.length : 0} characters`);
+      console.log(`🔍 Key preview: ${supabaseAnonKey ? supabaseAnonKey.slice(0, 50) + '...' : 'none'}`);
+      console.log('');
+      console.log('💡 The anon key was likely truncated by shell special characters (~, &, etc)');
+      console.log('');
+      console.log('🔧 Solutions:');
+      console.log('1. Put the ENTIRE anon key in quotes:');
+      console.log('   npx team-doc-share join workspace-id access-key url "eyJyour-complete-anon-key"');
+      console.log('');
+      console.log('2. Or manually create .env file:');
+      console.log('   echo "SUPABASE_ANON_KEY=your-complete-key" > .env');
+      console.log('   (then add other variables and run npx team-doc-share start)');
+      process.exit(1);
+    }
+
+    console.log(`✅ Workspace ID: ${workspaceId.slice(0, 8)}...`);
+    console.log(`✅ Access Key: ${accessKey.slice(0, 10)}...`);
+    console.log(`✅ Supabase URL: ${supabaseUrl}`);
+    console.log(`✅ Anon Key: ${supabaseAnonKey.slice(0, 20)}... (${supabaseAnonKey.length} chars)`);
 
     // Create .env file with all required settings
     const envContent = `# Team Doc Share - Team Configuration
@@ -95,7 +136,8 @@ MAX_FILE_SIZE=10485760
 ALLOWED_EXTENSIONS=.md,.txt
 `;
 
-    fs.writeFileSync('.env', envContent);
+    // Write with explicit UTF-8 encoding to prevent issues
+    fs.writeFileSync('.env', envContent, 'utf8');
     console.log('✅ Configuration saved');
 
     // Test connection
